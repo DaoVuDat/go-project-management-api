@@ -11,11 +11,18 @@ import (
 )
 
 type Querier interface {
+	AddUser(ctx context.Context, arg AddUserParams) (UserAccount, error)
+	ChangeUserStatus(ctx context.Context, arg ChangeUserStatusParams) (UserAccount, error)
+	ChangeUserType(ctx context.Context, arg ChangeUserTypeParams) (UserAccount, error)
 	GetProject(ctx context.Context, id int32) (Project, error)
 	GetProjectByUser(ctx context.Context, userProfile pgtype.Int4) (Project, error)
 	GetUserNameAccount(ctx context.Context, username string) (UserAccount, error)
 	GetUserProfileById(ctx context.Context, id int32) (UserProfile, error)
 	ListProjects(ctx context.Context) ([]Project, error)
+	UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidParams) (Project, error)
+	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) (Project, error)
+	UpdateProjectTimeWorking(ctx context.Context, arg UpdateProjectTimeWorkingParams) (Project, error)
+	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UserProfile, error)
 }
 
 var _ Querier = (*Queries)(nil)

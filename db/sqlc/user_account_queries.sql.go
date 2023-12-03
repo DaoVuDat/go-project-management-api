@@ -7,7 +7,92 @@ package db
 
 import (
 	"context"
+	"time"
 )
+
+const addUser = `-- name: AddUser :one
+INSERT INTO user_account (username, password)
+VALUES ($1, $2)
+RETURNING user_id, username, password, type, status, created_at, updated_at
+`
+
+type AddUserParams struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (UserAccount, error) {
+	row := q.db.QueryRow(ctx, addUser, arg.Username, arg.Password)
+	var i UserAccount
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Password,
+		&i.Type,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const changeUserStatus = `-- name: ChangeUserStatus :one
+UPDATE user_account
+SET status     = $2,
+    updated_at = $3
+WHERE user_id = $1
+RETURNING user_id, username, password, type, status, created_at, updated_at
+`
+
+type ChangeUserStatusParams struct {
+	UserID    int32         `json:"userId"`
+	Status    AccountStatus `json:"status"`
+	UpdatedAt time.Time     `json:"updatedAt"`
+}
+
+func (q *Queries) ChangeUserStatus(ctx context.Context, arg ChangeUserStatusParams) (UserAccount, error) {
+	row := q.db.QueryRow(ctx, changeUserStatus, arg.UserID, arg.Status, arg.UpdatedAt)
+	var i UserAccount
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Password,
+		&i.Type,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const changeUserType = `-- name: ChangeUserType :one
+UPDATE user_account
+SET type       = $2,
+    updated_at = $3
+WHERE user_id = $1
+RETURNING user_id, username, password, type, status, created_at, updated_at
+`
+
+type ChangeUserTypeParams struct {
+	UserID    int32       `json:"userId"`
+	Type      AccountType `json:"type"`
+	UpdatedAt time.Time   `json:"updatedAt"`
+}
+
+func (q *Queries) ChangeUserType(ctx context.Context, arg ChangeUserTypeParams) (UserAccount, error) {
+	row := q.db.QueryRow(ctx, changeUserType, arg.UserID, arg.Type, arg.UpdatedAt)
+	var i UserAccount
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Password,
+		&i.Type,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
 
 const getUserNameAccount = `-- name: GetUserNameAccount :one
 SELECT user_id, username, password, type, status, created_at, updated_at
