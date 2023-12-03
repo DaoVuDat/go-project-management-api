@@ -1,5 +1,8 @@
 DB_URL=postgres://postgres:project-management-password@localhost:5432/project-management?sslmode=disable
 
+install:
+	go install ./...
+.PHONY: install
 
 dev:
 	air

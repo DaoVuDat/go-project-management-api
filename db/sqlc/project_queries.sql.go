@@ -110,8 +110,8 @@ RETURNING id, user_profile, name, description, price, paid, status, start_time, 
 `
 
 type UpdateProjectPaidParams struct {
-	ID   int32 `json:"id"`
-	Paid int32 `json:"paid"`
+	ID   int32
+	Paid int32
 }
 
 func (q *Queries) UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidParams) (Project, error) {
@@ -141,8 +141,8 @@ RETURNING id, user_profile, name, description, price, paid, status, start_time, 
 `
 
 type UpdateProjectStatusParams struct {
-	ID     int32         `json:"id"`
-	Status ProjectStatus `json:"status"`
+	ID     int32
+	Status ProjectStatus
 }
 
 func (q *Queries) UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) (Project, error) {
@@ -173,9 +173,9 @@ RETURNING id, user_profile, name, description, price, paid, status, start_time, 
 `
 
 type UpdateProjectTimeWorkingParams struct {
-	ID        int32     `json:"id"`
-	StartTime time.Time `json:"startTime"`
-	EndTime   time.Time `json:"endTime"`
+	ID        int32
+	StartTime time.Time
+	EndTime   time.Time
 }
 
 func (q *Queries) UpdateProjectTimeWorking(ctx context.Context, arg UpdateProjectTimeWorkingParams) (Project, error) {

@@ -17,8 +17,8 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type AddUserParams struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string
+	Password string
 }
 
 func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (UserAccount, error) {
@@ -45,9 +45,9 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type ChangeUserStatusParams struct {
-	UserID    int32         `json:"userId"`
-	Status    AccountStatus `json:"status"`
-	UpdatedAt time.Time     `json:"updatedAt"`
+	UserID    int32
+	Status    AccountStatus
+	UpdatedAt time.Time
 }
 
 func (q *Queries) ChangeUserStatus(ctx context.Context, arg ChangeUserStatusParams) (UserAccount, error) {
@@ -74,9 +74,9 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type ChangeUserTypeParams struct {
-	UserID    int32       `json:"userId"`
-	Type      AccountType `json:"type"`
-	UpdatedAt time.Time   `json:"updatedAt"`
+	UserID    int32
+	Type      AccountType
+	UpdatedAt time.Time
 }
 
 func (q *Queries) ChangeUserType(ctx context.Context, arg ChangeUserTypeParams) (UserAccount, error) {
