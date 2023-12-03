@@ -10,7 +10,7 @@ import (
 )
 
 const getUserProfileById = `-- name: GetUserProfileById :one
-SELECT id, first_name, last_name, created_at, updated_at
+SELECT id, first_name, last_name, created_at, updated_at, image_url
 FROM user_profile
 WHERE id = $1
 LIMIT 1
@@ -25,6 +25,7 @@ func (q *Queries) GetUserProfileById(ctx context.Context, id int32) (UserProfile
 		&i.LastName,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ImageUrl,
 	)
 	return i, err
 }
