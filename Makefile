@@ -5,9 +5,9 @@ dev:
 	air
 .PHONY: dev
 
-slqc-gen:
+sqlc-gen:
 	sqlc generate
-.PHONY: slqc-gen
+.PHONY: sqlc-gen
 
 migration-up:
 	migrate -path ./migration/ -database "$(DB_URL)" -verbose up

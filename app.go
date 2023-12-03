@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
@@ -84,15 +85,11 @@ func main() {
 	log.Println(projects)
 
 	//============================ Create Mux Router
-	router := echo.New()
+	r := chi.NewRouter()
 
-	router.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, struct {
-			Hello string `json:"hello"`
-		}{
-			Hello: "fine",
-		})
+	r.Use(middleware.Logger)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome"))
 	})
-
-	router.Logger.Fatal(router.Start(globalEnvConfig.ServerAddress))
+	http.ListenAndServe(":3000", r)
 }

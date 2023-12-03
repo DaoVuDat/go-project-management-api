@@ -17,36 +17,36 @@ CREATE TYPE "project_status" AS ENUM (
 CREATE TABLE IF NOT EXISTS "user_account"
 (
     "user_id"    serial PRIMARY KEY,
-    "username"   text UNIQUE    NOT NULL,
-    "password"   text           NOT NULL,
-    "type"       account_type   NOT NULL DEFAULT 'client',
-    "status"     account_status NOT NULL DEFAULT 'pending',
-    "created_at" timestamp               DEFAULT (now()),
-    "updated_at" timestamp               DEFAULT (now())
+    "username"   text UNIQUE              NOT NULL,
+    "password"   text                     NOT NULL,
+    "type"       account_type             NOT NULL DEFAULT 'client',
+    "status"     account_status           NOT NULL DEFAULT 'pending',
+    "created_at" timestamp with time zone NOT NULL DEFAULT (now()),
+    "updated_at" timestamp with time zone NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE IF NOT EXISTS "user_profile"
 (
     "id"         serial PRIMARY KEY,
-    "first_name" text NOT NULL,
-    "last_name"  text NOT NULL,
-    "created_at" timestamp DEFAULT (now()),
-    "updated_at" timestamp DEFAULT (now())
+    "first_name" text                     NOT NULL,
+    "last_name"  text                     NOT NULL,
+    "created_at" timestamp with time zone NOT NULL DEFAULT (now()),
+    "updated_at" timestamp with time zone NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE IF NOT EXISTS "project"
 (
     "id"           serial PRIMARY KEY,
     "user_profile" integer,
-    "name"         text           NOT NULL,
-    "description"  text           NOT NULL,
-    "price"        integer        NOT NULL,
-    "paid"         integer        NOT NULL,
-    "status"       project_status NOT NULL DEFAULT 'registering',
-    "start_time"   timestamp      NOT NULL,
-    "end_time"     timestamp      NOT NULL,
-    "created_at"   timestamp               DEFAULT (now()),
-    "updated_at"   timestamp               DEFAULT (now())
+    "name"         text                     NOT NULL,
+    "description"  text                     NOT NULL,
+    "price"        integer                  NOT NULL,
+    "paid"         integer                  NOT NULL,
+    "status"       project_status           NOT NULL DEFAULT 'registering',
+    "start_time"   timestamp with time zone NOT NULL,
+    "end_time"     timestamp with time zone NOT NULL,
+    "created_at"   timestamp with time zone NOT NULL DEFAULT (now()),
+    "updated_at"   timestamp with time zone NOT NULL DEFAULT (now())
 );
 
 COMMENT ON COLUMN "project"."description" IS 'Which technologies and algorithms used';
