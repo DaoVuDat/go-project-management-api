@@ -11,9 +11,7 @@ import (
 )
 
 type Querier interface {
-	AddUser(ctx context.Context, arg AddUserParams) (UserAccount, error)
-	ChangeUserStatus(ctx context.Context, arg ChangeUserStatusParams) (UserAccount, error)
-	ChangeUserType(ctx context.Context, arg ChangeUserTypeParams) (UserAccount, error)
+	AddUserAccount(ctx context.Context, arg AddUserAccountParams) (UserAccount, error)
 	GetProject(ctx context.Context, id int32) (Project, error)
 	GetProjectByUser(ctx context.Context, userProfile pgtype.Int4) (Project, error)
 	GetUserNameAccount(ctx context.Context, username string) (UserAccount, error)
@@ -22,6 +20,7 @@ type Querier interface {
 	UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidParams) (Project, error)
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) (Project, error)
 	UpdateProjectTimeWorking(ctx context.Context, arg UpdateProjectTimeWorkingParams) (Project, error)
+	UpdateUserAccount(ctx context.Context, arg UpdateUserAccountParams) (UserAccount, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UserProfile, error)
 }
 
