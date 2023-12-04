@@ -1,8 +1,12 @@
 package usecase
 
 import (
+	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	db "project-management/db/sqlc"
 	"project-management/domain"
+	"project-management/util"
 )
 
 type accountUserUseCase struct {
@@ -20,13 +24,43 @@ IMPLEMENT USE CASE INTERFACE
 */
 
 func (accountUserUC *accountUserUseCase) CreateUserAccount(
+	ctx context.Context,
 	username string,
 	password string,
 ) (domain.AccountResponse, error) {
-	panic(1)
+	// Check username is existed ?
+	account, err := accountUserUC.accountUserRepo.GetUserAccount(ctx, username)
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return domain.AccountResponse{}, err
+		}
+	}
+
+	if account != nil {
+		return domain.AccountResponse{}, domain.ErrUsernameExists
+	}
+
+	// If it does not exist, create the new one
+	hashedPassword, err := util.HashPassword(password)
+	if err != nil {
+		return domain.AccountResponse{}, err
+	}
+
+	newUserAccount, err := accountUserUC.accountUserRepo.InsertUserAccount(ctx, username, hashedPassword)
+	if err != nil {
+		return domain.AccountResponse{}, err
+	}
+	newUserAccountResponse := domain.AccountResponse{
+		Id:       int(newUserAccount.UserID),
+		Username: newUserAccount.Username,
+		Type:     newUserAccount.Type,
+		Status:   newUserAccount.Status,
+	}
+	return newUserAccountResponse, nil
 }
 
 func (accountUserUC *accountUserUseCase) LoginAccount(
+	ctx context.Context,
 	username string,
 	password string,
 ) (domain.AccountResponse, error) {
@@ -34,8 +68,22 @@ func (accountUserUC *accountUserUseCase) LoginAccount(
 }
 
 func (accountUserUC *accountUserUseCase) UpdateUserAccount(
+	ctx context.Context,
+	userId int,
 	typeAccount *db.AccountType,
 	statusAccount *db.AccountStatus,
 ) (domain.AccountResponse, error) {
-	panic(1)
+	updatedAccount, err := accountUserUC.accountUserRepo.UpdateUserAccount(ctx, userId, typeAccount, statusAccount)
+	if err != nil {
+		return domain.AccountResponse{}, err
+	}
+
+	updatedAccountResponse := domain.AccountResponse{
+		Id:       int(updatedAccount.UserID),
+		Username: updatedAccount.Username,
+		Type:     updatedAccount.Type,
+		Status:   updatedAccount.Status,
+	}
+
+	return updatedAccountResponse, nil
 }

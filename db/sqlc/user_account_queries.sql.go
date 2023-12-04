@@ -60,8 +60,8 @@ func (q *Queries) GetUserNameAccount(ctx context.Context, username string) (User
 
 const updateUserAccount = `-- name: UpdateUserAccount :one
 UPDATE user_account
-SET status     = coalesce($3, status),
-    type       = coalesce($4, type),
+SET status     = COALESCE($3, status),
+    type       = COALESCE($4, type),
     updated_at = $2
 WHERE user_id = $1
 RETURNING user_id, username, password, type, status, created_at, updated_at
