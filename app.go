@@ -10,6 +10,10 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
+	httpuseracc "project-management/features/account/delivery/http"
+	"project-management/features/account/repository/postgres"
+	"project-management/features/account/usecase"
+	glbmiddleware "project-management/features/middleware"
 	"time"
 )
 
@@ -74,9 +78,6 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// Repo
-
-	// Use case
 	//queries := db.New(dbPool)
 	//projects, err := queries.ListProjects(context.Background())
 	//if err != nil {
@@ -90,6 +91,20 @@ func main() {
 	r.Use(middleware.Logger)
 
 	// Setup handlers
+	r.Route("/api/", func(r chi.Router) {
+		// Version 1
+		r.Route("/v1/", func(r chi.Router) {
+			r.Use(glbmiddleware.ApiVersionCtxMiddleware("v1"))
+			// Repo
+			accountRepo := postgres.NewPostgresAccountUserRepository(dbPool)
+
+			// Use case
+			accountUseCase := usecase.NewAccountUserUseCase(accountRepo)
+
+			// Setup Handlers
+			httpuseracc.SetupAccountUserHandler(r, accountUseCase)
+		})
+	})
 
 	//============================ Create Server
 	server := graceful.WithDefaults(&http.Server{
