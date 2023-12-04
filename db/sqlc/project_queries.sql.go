@@ -19,7 +19,7 @@ WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetProject(ctx context.Context, id int32) (Project, error) {
+func (q *Queries) GetProject(ctx context.Context, id int64) (Project, error) {
 	row := q.db.QueryRow(ctx, getProject, id)
 	var i Project
 	err := row.Scan(
@@ -45,7 +45,7 @@ WHERE user_profile = $1
 ORDER BY name
 `
 
-func (q *Queries) GetProjectByUser(ctx context.Context, userProfile pgtype.Int4) (Project, error) {
+func (q *Queries) GetProjectByUser(ctx context.Context, userProfile pgtype.Int8) (Project, error) {
 	row := q.db.QueryRow(ctx, getProjectByUser, userProfile)
 	var i Project
 	err := row.Scan(
@@ -110,7 +110,7 @@ RETURNING id, user_profile, name, description, price, paid, status, start_time, 
 `
 
 type UpdateProjectPaidParams struct {
-	ID   int32
+	ID   int64
 	Paid int32
 }
 
@@ -141,7 +141,7 @@ RETURNING id, user_profile, name, description, price, paid, status, start_time, 
 `
 
 type UpdateProjectStatusParams struct {
-	ID     int32
+	ID     int64
 	Status ProjectStatus
 }
 
@@ -173,7 +173,7 @@ RETURNING id, user_profile, name, description, price, paid, status, start_time, 
 `
 
 type UpdateProjectTimeWorkingParams struct {
-	ID        int32
+	ID        int64
 	StartTime time.Time
 	EndTime   time.Time
 }

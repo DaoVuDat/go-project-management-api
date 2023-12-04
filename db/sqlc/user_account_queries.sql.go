@@ -68,7 +68,7 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type UpdateUserAccountParams struct {
-	UserID    int32
+	UserID    int64
 	UpdatedAt time.Time
 	Status    NullAccountStatus
 	Type      NullAccountType

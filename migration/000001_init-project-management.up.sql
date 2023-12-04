@@ -16,7 +16,7 @@ CREATE TYPE "project_status" AS ENUM (
 
 CREATE TABLE IF NOT EXISTS "user_account"
 (
-    "user_id"    serial PRIMARY KEY,
+    "user_id"    bigserial PRIMARY KEY,
     "username"   text UNIQUE              NOT NULL,
     "password"   text                     NOT NULL,
     "type"       account_type             NOT NULL DEFAULT 'client',
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS "user_account"
 
 CREATE TABLE IF NOT EXISTS "user_profile"
 (
-    "id"         serial PRIMARY KEY,
+    "id"         bigserial PRIMARY KEY,
     "first_name" text                     NOT NULL,
     "last_name"  text                     NOT NULL,
     "created_at" timestamp with time zone NOT NULL DEFAULT (now()),
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS "user_profile"
 
 CREATE TABLE IF NOT EXISTS "project"
 (
-    "id"           serial PRIMARY KEY,
-    "user_profile" integer,
+    "id"           bigserial PRIMARY KEY,
+    "user_profile" bigint,
     "name"         text                     NOT NULL,
     "description"  text                     NOT NULL,
     "price"        integer                  NOT NULL,

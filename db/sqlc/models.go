@@ -140,8 +140,8 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 }
 
 type Project struct {
-	ID          int32
-	UserProfile pgtype.Int4
+	ID          int64
+	UserProfile pgtype.Int8
 	Name        string
 	// Which technologies and algorithms used
 	Description string
@@ -157,7 +157,7 @@ type Project struct {
 }
 
 type UserAccount struct {
-	UserID    int32
+	UserID    int64
 	Username  string
 	Password  string
 	Type      AccountType
@@ -167,7 +167,7 @@ type UserAccount struct {
 }
 
 type UserProfile struct {
-	ID        int32
+	ID        int64
 	FirstName string
 	LastName  string
 	CreatedAt time.Time

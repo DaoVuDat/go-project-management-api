@@ -12,10 +12,10 @@ import (
 
 type Querier interface {
 	AddUserAccount(ctx context.Context, arg AddUserAccountParams) (UserAccount, error)
-	GetProject(ctx context.Context, id int32) (Project, error)
-	GetProjectByUser(ctx context.Context, userProfile pgtype.Int4) (Project, error)
+	GetProject(ctx context.Context, id int64) (Project, error)
+	GetProjectByUser(ctx context.Context, userProfile pgtype.Int8) (Project, error)
 	GetUserNameAccount(ctx context.Context, username string) (UserAccount, error)
-	GetUserProfileById(ctx context.Context, id int32) (UserProfile, error)
+	GetUserProfileById(ctx context.Context, id int64) (UserProfile, error)
 	ListProjects(ctx context.Context) ([]Project, error)
 	UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidParams) (Project, error)
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) (Project, error)

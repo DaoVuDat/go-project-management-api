@@ -19,7 +19,7 @@ WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUserProfileById(ctx context.Context, id int32) (UserProfile, error) {
+func (q *Queries) GetUserProfileById(ctx context.Context, id int64) (UserProfile, error) {
 	row := q.db.QueryRow(ctx, getUserProfileById, id)
 	var i UserProfile
 	err := row.Scan(
@@ -44,7 +44,7 @@ RETURNING id, first_name, last_name, created_at, updated_at, image_url
 `
 
 type UpdateUserProfileParams struct {
-	ID        int32
+	ID        int64
 	FirstName string
 	LastName  string
 	ImageUrl  pgtype.Text
