@@ -2,8 +2,14 @@ package domain
 
 import (
 	"context"
+	"fmt"
+	"github.com/go-playground/validator/v10"
+
+	//"project-management/common"
 	db "project-management/db/sqlc"
 )
+
+// Request and Response model
 
 type AccountCreateAndLoginRequest struct {
 	Username string `json:"username"`
@@ -11,9 +17,9 @@ type AccountCreateAndLoginRequest struct {
 }
 
 type AccountUpdateRequest struct {
-	Type     string `json:"accountType"`
-	Status   string `json:"accountStatus"`
-	Password string `json:"password"`
+	Type     db.AccountType   `json:"accountType,omitempty"`
+	Status   db.AccountStatus `json:"accountStatus,omitempty"`
+	Password string           `json:"password"`
 }
 
 type AccountResponse struct {
@@ -22,6 +28,31 @@ type AccountResponse struct {
 	Type     db.AccountType   `json:"type"`
 	Status   db.AccountStatus `json:"status"`
 }
+
+// Setup custom validators
+
+func (cv *CustomValidator) SetUpAccountUserValidator() {
+	cv.Validator.RegisterStructValidation(func(sl validator.StructLevel) {
+		accountUpdateRequest := sl.Current().Interface().(AccountUpdateRequest)
+		fmt.Println(len(accountUpdateRequest.Status))
+
+		if len(accountUpdateRequest.Status) > 0 {
+			status := accountUpdateRequest.Status
+			if status != db.AccountStatusPending && status != db.AccountStatusActivated {
+				sl.ReportError(accountUpdateRequest.Status, "accountStatus", "Status", "", "invalid status account")
+			}
+		}
+
+		if len(accountUpdateRequest.Type) > 0 {
+			typeAccount := accountUpdateRequest.Type
+			if typeAccount != db.AccountTypeClient && typeAccount != db.AccountTypeAdmin {
+				sl.ReportError(accountUpdateRequest.Type, "accountType", "Type", "", "invalid type account")
+			}
+		}
+	}, AccountUpdateRequest{})
+}
+
+// UC Layer and Repo Layer
 
 type AccountUseCase interface {
 	CreateUserAccount(ctx context.Context, username string, password string) (AccountResponse, error)

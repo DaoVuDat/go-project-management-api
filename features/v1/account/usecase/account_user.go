@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 	"project-management/common"
 	db "project-management/db/sqlc"
 	"project-management/domain"
@@ -31,15 +32,20 @@ func (accountUserUC *accountUserUseCase) CreateUserAccount(
 	username string,
 	password string,
 ) (domain.AccountResponse, error) {
+	accountUserUC.appContext.Logger.Debug("CreateUserAccount UC")
+
 	// Check username is existed ?
 	account, err := accountUserUC.accountUserRepo.GetUserAccount(ctx, username)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
+			accountUserUC.appContext.Logger.Debug("CreateUserAccount UC", zap.String("error", "general error"))
 			return domain.AccountResponse{}, err
 		}
 	}
 
 	if account != nil {
+		accountUserUC.appContext.Logger.Debug("CreateUserAccount UC", zap.String("error", "user existed"))
+
 		return domain.AccountResponse{}, domain.ErrUsernameExists
 	}
 

@@ -6,6 +6,7 @@ import (
 
 var (
 	ErrUsernameExists = errors.New("username already exists")
+	ErrBadRequest     = errors.New("bad request")
 )
 
 type ErrResponse struct {

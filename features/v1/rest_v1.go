@@ -10,6 +10,7 @@ import (
 )
 
 func SetupRestVersion1Api(appCtx common.AppContext, groupRoute *echo.Group) {
+
 	rV1Group := groupRoute.Group("/v1")
 	rV1Group.Use(glbmiddleware.ApiVersionCtxMiddleware("v1"))
 	// Repo
@@ -19,5 +20,5 @@ func SetupRestVersion1Api(appCtx common.AppContext, groupRoute *echo.Group) {
 	accountUseCase := usecase.NewAccountUserUseCase(appCtx, accountRepo)
 
 	// Setup Handlers
-	httpuseracc.SetupAccountUserHandler(rV1Group, accountUseCase)
+	httpuseracc.SetupAccountUserHandler(rV1Group, appCtx, accountUseCase)
 }

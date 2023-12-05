@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -74,8 +75,6 @@ func main() {
 		fmt.Println("cannot load config:", err)
 	}
 
-	//fmt.Println(globalEnvConfig)
-
 	//============================ Load DB Service (Pg Pool)
 	dbPool, err := connectDb(context.Background(), *globalEnvConfig)
 	if err != nil {
@@ -86,6 +85,9 @@ func main() {
 	//============================ Set up Logger
 	config := zap.NewDevelopmentConfig()
 	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	config.EncoderConfig.EncodeTime = func(t time.Time, encoder zapcore.PrimitiveArrayEncoder) {
+		encoder.AppendString(t.Format(time.RFC1123Z))
+	}
 	logger, err := config.Build()
 	if err != nil {
 		log.Fatalf("can't initialize zap logger: %v", err)
@@ -98,13 +100,26 @@ func main() {
 		Pool:   dbPool,
 	}
 
+	//============================ Setup Validator
+	validatorReq := &domain.CustomValidator{
+		Validator: validator.New(validator.WithRequiredStructEnabled()),
+	}
+
+	validatorReq.SetUpAccountUserValidator()
+
 	//============================ Create Mux Router
 	r := echo.New()
+	//r.Validator = validatorReq
 	r.Logger.SetLevel(log.INFO)
+	r.Validator = validatorReq
 
 	// Setup Default Error Handling
 	r.HTTPErrorHandler = func(err error, c echo.Context) {
-		err = c.JSON(http.StatusInternalServerError, domain.ErrInternal(err))
+		if errors.Is(err, domain.ErrBadRequest) {
+			err = c.JSON(http.StatusBadRequest, domain.ErrInvalidRequest(err))
+		} else {
+			err = c.JSON(http.StatusInternalServerError, domain.ErrInternal(err))
+		}
 		if err != nil {
 			c.Logger().Error(err)
 		}
@@ -137,7 +152,6 @@ func main() {
 
 	// Setup handlers
 	rApiGroup := r.Group("/api")
-
 	//=== Version 1
 	apiv1.SetupRestVersion1Api(appCtx, rApiGroup)
 
