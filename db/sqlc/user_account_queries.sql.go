@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addUserAccount = `-- name: AddUserAccount :one
@@ -62,6 +64,7 @@ const updateUserAccount = `-- name: UpdateUserAccount :one
 UPDATE user_account
 SET status     = COALESCE($3, status),
     type       = COALESCE($4, type),
+    password   = COALESCE($5, password),
     updated_at = $2
 WHERE user_id = $1
 RETURNING user_id, username, password, type, status, created_at, updated_at
@@ -72,6 +75,7 @@ type UpdateUserAccountParams struct {
 	UpdatedAt time.Time
 	Status    NullAccountStatus
 	Type      NullAccountType
+	Password  pgtype.Text
 }
 
 func (q *Queries) UpdateUserAccount(ctx context.Context, arg UpdateUserAccountParams) (UserAccount, error) {
@@ -80,6 +84,7 @@ func (q *Queries) UpdateUserAccount(ctx context.Context, arg UpdateUserAccountPa
 		arg.UpdatedAt,
 		arg.Status,
 		arg.Type,
+		arg.Password,
 	)
 	var i UserAccount
 	err := row.Scan(

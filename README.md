@@ -8,8 +8,8 @@ Welcome to the Project Management API! This API is built using Go, PostgreSQL, s
   - Initialize your PostgreSQL database.
   - Install and configure sqlc for generating Go code from SQL.
 
-- [x] **Integrate Go-chi Router**
-  - Implement routes and handlers using the go-chi router for a clean and efficient API structure.
+- [x] **Integrate Echo Framework**
+  - Implement routes and handlers using the Echo router for a clean and efficient API structure.
 
 - [x] **Add Air for Hot Reloading**
   - Install Air to enable automatic reloading during development.

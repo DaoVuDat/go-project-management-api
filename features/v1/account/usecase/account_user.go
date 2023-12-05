@@ -72,8 +72,9 @@ func (accountUserUC *accountUserUseCase) UpdateUserAccount(
 	userId int,
 	typeAccount *db.AccountType,
 	statusAccount *db.AccountStatus,
+	password *string,
 ) (domain.AccountResponse, error) {
-	updatedAccount, err := accountUserUC.accountUserRepo.UpdateUserAccount(ctx, userId, typeAccount, statusAccount)
+	updatedAccount, err := accountUserUC.accountUserRepo.UpdateUserAccount(ctx, userId, typeAccount, statusAccount, password)
 	if err != nil {
 		return domain.AccountResponse{}, err
 	}

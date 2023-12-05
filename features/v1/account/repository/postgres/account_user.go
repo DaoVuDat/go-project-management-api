@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "project-management/db/sqlc"
 	"project-management/domain"
@@ -55,9 +56,11 @@ func (accountUserRepo *accountUserRepository) UpdateUserAccount(
 	userId int,
 	typeAccount *db.AccountType,
 	statusAccount *db.AccountStatus,
+	password *string,
 ) (*db.UserAccount, error) {
 	accountStatus := db.NullAccountStatus{}
 	accountType := db.NullAccountType{}
+	passwordType := pgtype.Text{}
 
 	if typeAccount != nil {
 		accountType.AccountType = *typeAccount
@@ -69,12 +72,18 @@ func (accountUserRepo *accountUserRepository) UpdateUserAccount(
 		accountType.Valid = true
 	}
 
+	if password != nil {
+		passwordType.String = *password
+		passwordType.Valid = true
+	}
+
 	query := db.New(accountUserRepo.ConnPool)
 	account, err := query.UpdateUserAccount(ctx, db.UpdateUserAccountParams{
-		UserID:    int32(userId),
+		UserID:    int64(userId),
 		UpdatedAt: time.Now(),
 		Status:    accountStatus,
 		Type:      accountType,
+		Password:  passwordType,
 	})
 	if err != nil {
 		return nil, err

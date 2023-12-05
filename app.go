@@ -2,18 +2,21 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/ory/graceful"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
-	"log"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"net/http"
-	httpuseracc "project-management/features/account/delivery/http"
-	"project-management/features/account/repository/postgres"
-	"project-management/features/account/usecase"
-	glbmiddleware "project-management/features/middleware"
+	"os"
+	"os/signal"
+	"project-management/domain"
+	apiv1 "project-management/features/v1"
+	"syscall"
 	"time"
 )
 
@@ -78,47 +81,83 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	//queries := db.New(dbPool)
-	//projects, err := queries.ListProjects(context.Background())
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//log.Println(projects)
-
+	// Set up Logger
+	config := zap.NewDevelopmentConfig()
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	logger, err := config.Build()
+	if err != nil {
+		log.Fatalf("can't initialize zap logger: %v", err)
+	}
+	defer logger.Sync()
 	//============================ Create Mux Router
-	r := chi.NewRouter()
+	r := echo.New()
+	r.Logger.SetLevel(log.INFO)
+
+	// Setup Default Error Handling
+	r.HTTPErrorHandler = func(err error, c echo.Context) {
+		err = c.JSON(http.StatusInternalServerError, domain.ErrInternal(err))
+		if err != nil {
+			c.Logger().Error(err)
+		}
+	}
+
 	// Setup Global Middleware
-	r.Use(middleware.Logger)
+	r.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogHost:      true,
+		LogMethod:    true,
+		LogURIPath:   true,
+		LogError:     true,
+		LogURI:       true,
+		LogStatus:    true,
+		LogUserAgent: true,
+		LogProtocol:  true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Info("Request",
+				zap.String("Host", v.Host),
+				zap.String("URI", v.URI),
+				zap.String("URIPath", v.URIPath),
+				zap.String("Method", v.Method),
+				zap.Int("Status", v.Status),
+				zap.String("UserAgent", v.UserAgent),
+				zap.String("Protocol", v.Protocol),
+				zap.Error(v.Error),
+			)
+			return nil
+		},
+	}))
 
 	// Setup handlers
-	r.Route("/api/", func(r chi.Router) {
-		// Version 1
-		r.Route("/v1/", func(r chi.Router) {
-			r.Use(glbmiddleware.ApiVersionCtxMiddleware("v1"))
-			// Repo
-			accountRepo := postgres.NewPostgresAccountUserRepository(dbPool)
+	rApiGroup := r.Group("/api/")
 
-			// Use case
-			accountUseCase := usecase.NewAccountUserUseCase(accountRepo)
-
-			// Setup Handlers
-			httpuseracc.SetupAccountUserHandler(r, accountUseCase)
-		})
-	})
+	//=== Version 1
+	apiv1.SetupRestVersion1Api(rApiGroup, dbPool)
 
 	//============================ Create Server
-	server := graceful.WithDefaults(&http.Server{
+	server := http.Server{
 		Addr:         globalEnvConfig.ServerAddress,
 		Handler:      r,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
-	})
+	}
 
 	//============================ Start Server
-	log.Printf("main: Listening on %s\n", globalEnvConfig.ServerAddress)
-	if err := graceful.Graceful(server.ListenAndServe, server.Shutdown); err != nil {
-		log.Fatalln("main: Failed to gracefully shutdown")
+	go func() {
+		if err := r.StartServer(&server); err != nil && errors.Is(err, http.ErrServerClosed) {
+			r.Logger.Info("main: shutting down the server")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		r.Logger.Fatal("main: Server was shutdown gracefully")
+		//common.Logger.LogError().Msg("main: Server was shutdown gracefully")
 	}
-	log.Println("main: Server was shutdown gracefully")
+
 }
