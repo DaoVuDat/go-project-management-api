@@ -4,18 +4,21 @@ import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"project-management/common"
 	db "project-management/db/sqlc"
 	"project-management/domain"
 	"time"
 )
 
 type accountUserRepository struct {
-	ConnPool *pgxpool.Pool
+	appCtx   common.AppContext
+	connPool *pgxpool.Pool
 }
 
-func NewPostgresAccountUserRepository(connPool *pgxpool.Pool) domain.AccountRepository {
+func NewPostgresAccountUserRepository(appCtx common.AppContext) domain.AccountRepository {
 	return &accountUserRepository{
-		ConnPool: connPool,
+		appCtx:   appCtx,
+		connPool: appCtx.Pool,
 	}
 }
 
@@ -27,7 +30,7 @@ func (accountUserRepo *accountUserRepository) GetUserAccount(
 	ctx context.Context,
 	username string,
 ) (*db.UserAccount, error) {
-	query := db.New(accountUserRepo.ConnPool)
+	query := db.New(accountUserRepo.connPool)
 	account, err := query.GetUserNameAccount(ctx, username)
 	if err != nil {
 		return nil, err
@@ -40,7 +43,7 @@ func (accountUserRepo *accountUserRepository) InsertUserAccount(
 	username,
 	password string,
 ) (*db.UserAccount, error) {
-	query := db.New(accountUserRepo.ConnPool)
+	query := db.New(accountUserRepo.connPool)
 	account, err := query.AddUserAccount(ctx, db.AddUserAccountParams{
 		Username: username,
 		Password: password,
@@ -77,7 +80,7 @@ func (accountUserRepo *accountUserRepository) UpdateUserAccount(
 		passwordType.Valid = true
 	}
 
-	query := db.New(accountUserRepo.ConnPool)
+	query := db.New(accountUserRepo.connPool)
 	account, err := query.UpdateUserAccount(ctx, db.UpdateUserAccountParams{
 		UserID:    int64(userId),
 		UpdatedAt: time.Now(),

@@ -4,17 +4,20 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
+	"project-management/common"
 	db "project-management/db/sqlc"
 	"project-management/domain"
 	"project-management/util"
 )
 
 type accountUserUseCase struct {
+	appContext      common.AppContext
 	accountUserRepo domain.AccountRepository
 }
 
-func NewAccountUserUseCase(accountUserRepo domain.AccountRepository) domain.AccountUseCase {
+func NewAccountUserUseCase(appCtx common.AppContext, accountUserRepo domain.AccountRepository) domain.AccountUseCase {
 	return &accountUserUseCase{
+		appContext:      appCtx,
 		accountUserRepo: accountUserRepo,
 	}
 }

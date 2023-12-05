@@ -3,8 +3,8 @@ package httpuseracc
 import (
 	"errors"
 	"fmt"
-	"github.com/go-chi/render"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"net/http"
 	"project-management/domain"
 )
@@ -28,6 +28,7 @@ func SetupAccountUserHandler(group *echo.Group, accountUserHandler domain.Accoun
 */
 
 func (handler *AccountUserHandler) CreateUserAccountHandler(c echo.Context) error {
+	log.Info("CreateUserAccountHandler")
 	ctx := c.Request().Context()
 	data := &domain.AccountCreateAndLoginRequest{}
 
@@ -60,9 +61,3 @@ func (handler *AccountUserHandler) CreateUserAccountHandler(c echo.Context) erro
 //	}
 //
 //}
-
-func (handler *AccountUserHandler) TestHandler(w http.ResponseWriter, r *http.Request) {
-	render.JSON(w, r, map[string]string{
-		"Test": "Hello",
-	})
-}

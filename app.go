@@ -14,8 +14,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"project-management/common"
 	"project-management/domain"
 	apiv1 "project-management/features/v1"
+
 	"syscall"
 	"time"
 )
@@ -81,7 +83,7 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// Set up Logger
+	//============================ Set up Logger
 	config := zap.NewDevelopmentConfig()
 	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	logger, err := config.Build()
@@ -89,6 +91,13 @@ func main() {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
 	defer logger.Sync()
+
+	//============================ Setup AppCtx
+	appCtx := common.AppContext{
+		Logger: logger,
+		Pool:   dbPool,
+	}
+
 	//============================ Create Mux Router
 	r := echo.New()
 	r.Logger.SetLevel(log.INFO)
@@ -127,10 +136,10 @@ func main() {
 	}))
 
 	// Setup handlers
-	rApiGroup := r.Group("/api/")
+	rApiGroup := r.Group("/api")
 
 	//=== Version 1
-	apiv1.SetupRestVersion1Api(rApiGroup, dbPool)
+	apiv1.SetupRestVersion1Api(appCtx, rApiGroup)
 
 	//============================ Create Server
 	server := http.Server{
@@ -157,7 +166,6 @@ func main() {
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		r.Logger.Fatal("main: Server was shutdown gracefully")
-		//common.Logger.LogError().Msg("main: Server was shutdown gracefully")
 	}
 
 }
