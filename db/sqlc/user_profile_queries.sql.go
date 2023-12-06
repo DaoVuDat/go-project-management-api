@@ -44,11 +44,11 @@ RETURNING id, first_name, last_name, created_at, updated_at, image_url
 `
 
 type UpdateUserProfileParams struct {
-	ID        int64       `json:"id"`
-	FirstName string      `json:"firstName"`
-	LastName  string      `json:"lastName"`
-	ImageUrl  pgtype.Text `json:"imageUrl"`
-	UpdatedAt time.Time   `json:"updatedAt"`
+	ID        int64       `db:"id"`
+	FirstName string      `db:"first_name"`
+	LastName  string      `db:"last_name"`
+	ImageUrl  pgtype.Text `db:"image_url"`
+	UpdatedAt time.Time   `db:"updated_at"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UserProfile, error) {

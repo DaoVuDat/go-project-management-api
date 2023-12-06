@@ -19,8 +19,8 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type AddUserAccountParams struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `db:"username"`
+	Password string `db:"password"`
 }
 
 func (q *Queries) AddUserAccount(ctx context.Context, arg AddUserAccountParams) (UserAccount, error) {
@@ -71,11 +71,11 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type UpdateUserAccountParams struct {
-	UserID    int64             `json:"userId"`
-	UpdatedAt time.Time         `json:"updatedAt"`
-	Type      NullAccountType   `json:"type"`
-	Status    NullAccountStatus `json:"status"`
-	Password  pgtype.Text       `json:"password"`
+	UserID    int64             `db:"user_id"`
+	UpdatedAt time.Time         `db:"updated_at"`
+	Type      NullAccountType   `db:"type"`
+	Status    NullAccountStatus `db:"status"`
+	Password  pgtype.Text       `db:"password"`
 }
 
 func (q *Queries) UpdateUserAccount(ctx context.Context, arg UpdateUserAccountParams) (UserAccount, error) {
