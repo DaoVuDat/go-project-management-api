@@ -32,8 +32,8 @@ func (e *AccountStatus) Scan(src interface{}) error {
 }
 
 type NullAccountStatus struct {
-	AccountStatus AccountStatus
-	Valid         bool // Valid is true if AccountStatus is not NULL
+	AccountStatus AccountStatus `json:"accountStatus"`
+	Valid         bool          `json:"valid"` // Valid is true if AccountStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -74,8 +74,8 @@ func (e *AccountType) Scan(src interface{}) error {
 }
 
 type NullAccountType struct {
-	AccountType AccountType
-	Valid       bool // Valid is true if AccountType is not NULL
+	AccountType AccountType `json:"accountType"`
+	Valid       bool        `json:"valid"` // Valid is true if AccountType is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -117,8 +117,8 @@ func (e *ProjectStatus) Scan(src interface{}) error {
 }
 
 type NullProjectStatus struct {
-	ProjectStatus ProjectStatus
-	Valid         bool // Valid is true if ProjectStatus is not NULL
+	ProjectStatus ProjectStatus `json:"projectStatus"`
+	Valid         bool          `json:"valid"` // Valid is true if ProjectStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -140,37 +140,37 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 }
 
 type Project struct {
-	ID          int64
-	UserProfile pgtype.Int8
-	Name        string
+	ID          int64       `json:"id"`
+	UserProfile pgtype.Int8 `json:"userProfile"`
+	Name        string      `json:"name"`
 	// Which technologies and algorithms used
-	Description string
+	Description string `json:"description"`
 	// Price of the project
-	Price int32
+	Price int32 `json:"price"`
 	// How much money client paid
-	Paid      int32
-	Status    ProjectStatus
-	StartTime time.Time
-	EndTime   time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Paid      int32         `json:"paid"`
+	Status    ProjectStatus `json:"status"`
+	StartTime time.Time     `json:"startTime"`
+	EndTime   time.Time     `json:"endTime"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
 }
 
 type UserAccount struct {
-	UserID    int64
-	Username  string
-	Password  string
-	Type      AccountType
-	Status    AccountStatus
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UserID    int64         `json:"userId"`
+	Username  string        `json:"username"`
+	Password  string        `json:"password"`
+	Type      AccountType   `json:"type"`
+	Status    AccountStatus `json:"status"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
 }
 
 type UserProfile struct {
-	ID        int64
-	FirstName string
-	LastName  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	ImageUrl  pgtype.Text
+	ID        int64       `json:"id"`
+	FirstName string      `json:"firstName"`
+	LastName  string      `json:"lastName"`
+	CreatedAt time.Time   `json:"createdAt"`
+	UpdatedAt time.Time   `json:"updatedAt"`
+	ImageUrl  pgtype.Text `json:"imageUrl"`
 }

@@ -11,8 +11,8 @@ RETURNING *;
 
 -- name: UpdateUserAccount :one
 UPDATE user_account
-SET status     = COALESCE(sqlc.narg('status'), status),
-    type       = COALESCE(sqlc.narg('type'), type),
+SET type       = COALESCE(sqlc.narg('type'), type),
+    status     = COALESCE(sqlc.narg('status'), status),
     password   = COALESCE(sqlc.narg('password'), password),
     updated_at = $2
 WHERE user_id = $1

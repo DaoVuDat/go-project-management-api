@@ -19,8 +19,8 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type AddUserAccountParams struct {
-	Username string
-	Password string
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func (q *Queries) AddUserAccount(ctx context.Context, arg AddUserAccountParams) (UserAccount, error) {
@@ -62,8 +62,8 @@ func (q *Queries) GetUserNameAccount(ctx context.Context, username string) (User
 
 const updateUserAccount = `-- name: UpdateUserAccount :one
 UPDATE user_account
-SET status     = COALESCE($3, status),
-    type       = COALESCE($4, type),
+SET type       = COALESCE($3, type),
+    status     = COALESCE($4, status),
     password   = COALESCE($5, password),
     updated_at = $2
 WHERE user_id = $1
@@ -71,19 +71,19 @@ RETURNING user_id, username, password, type, status, created_at, updated_at
 `
 
 type UpdateUserAccountParams struct {
-	UserID    int64
-	UpdatedAt time.Time
-	Status    NullAccountStatus
-	Type      NullAccountType
-	Password  pgtype.Text
+	UserID    int64             `json:"userId"`
+	UpdatedAt time.Time         `json:"updatedAt"`
+	Type      NullAccountType   `json:"type"`
+	Status    NullAccountStatus `json:"status"`
+	Password  pgtype.Text       `json:"password"`
 }
 
 func (q *Queries) UpdateUserAccount(ctx context.Context, arg UpdateUserAccountParams) (UserAccount, error) {
 	row := q.db.QueryRow(ctx, updateUserAccount,
 		arg.UserID,
 		arg.UpdatedAt,
-		arg.Status,
 		arg.Type,
+		arg.Status,
 		arg.Password,
 	)
 	var i UserAccount

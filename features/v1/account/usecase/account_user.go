@@ -6,7 +6,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 	"project-management/common"
-	db "project-management/db/sqlc"
 	"project-management/domain"
 	"project-management/util"
 )
@@ -78,12 +77,19 @@ func (accountUserUC *accountUserUseCase) LoginAccount(
 
 func (accountUserUC *accountUserUseCase) UpdateUserAccount(
 	ctx context.Context,
-	userId int,
-	typeAccount *db.AccountType,
-	statusAccount *db.AccountStatus,
-	password *string,
+	updateUserAccount domain.AccountUpdate,
 ) (domain.AccountResponse, error) {
-	updatedAccount, err := accountUserUC.accountUserRepo.UpdateUserAccount(ctx, userId, typeAccount, statusAccount, password)
+
+	// Hash update password if update password does exist
+	if updateUserAccount.Password.Valid {
+		hp, err := util.HashPassword(updateUserAccount.Password.String)
+		if err != nil {
+			return domain.AccountResponse{}, err
+		}
+		updateUserAccount.Password.String = hp
+	}
+
+	updatedAccount, err := accountUserUC.accountUserRepo.UpdateUserAccount(ctx, updateUserAccount)
 	if err != nil {
 		return domain.AccountResponse{}, err
 	}

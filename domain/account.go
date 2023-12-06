@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	//"project-management/common"
 	db "project-management/db/sqlc"
@@ -19,7 +20,7 @@ type AccountCreateAndLoginRequest struct {
 type AccountUpdateRequest struct {
 	Type     db.AccountType   `json:"accountType,omitempty"`
 	Status   db.AccountStatus `json:"accountStatus,omitempty"`
-	Password string           `json:"password"`
+	Password string           `json:"password,omitempty"`
 }
 
 type AccountResponse struct {
@@ -29,12 +30,51 @@ type AccountResponse struct {
 	Status   db.AccountStatus `json:"status"`
 }
 
+// UC Layer and Repo Layer
+
+type AccountUseCase interface {
+	CreateUserAccount(ctx context.Context, username string, password string) (AccountResponse, error)
+	LoginAccount(ctx context.Context, username string, password string) (AccountResponse, error)
+	UpdateUserAccount(ctx context.Context, updateUserAccount AccountUpdate) (AccountResponse, error)
+}
+
+type AccountRepository interface {
+	GetUserAccount(ctx context.Context, username string) (*db.UserAccount, error)
+	InsertUserAccount(ctx context.Context, username string, password string) (*db.UserAccount, error)
+	UpdateUserAccount(ctx context.Context, updateUserAccount AccountUpdate) (*db.UserAccount, error)
+}
+
+// Utils
+
+type AccountUpdate struct {
+	UserId   int
+	Type     db.NullAccountType
+	Status   db.NullAccountStatus
+	Password pgtype.Text
+}
+
+func (a *AccountUpdate) MapAccountUpdateRequestToAccountUpdate(userId int, data AccountUpdateRequest) {
+	a.UserId = userId
+	a.Type = db.NullAccountType{
+		AccountType: data.Type,
+		Valid:       len(data.Type) > 0,
+	}
+	a.Status = db.NullAccountStatus{
+		AccountStatus: data.Status,
+		Valid:         len(data.Status) > 0,
+	}
+	a.Password = pgtype.Text{
+		String: data.Password,
+		Valid:  len(data.Password) > 0,
+	}
+}
+
 // Setup custom validators
 
 func (cv *CustomValidator) SetUpAccountUserValidator() {
 	cv.Validator.RegisterStructValidation(func(sl validator.StructLevel) {
+		fmt.Println("Validate")
 		accountUpdateRequest := sl.Current().Interface().(AccountUpdateRequest)
-		fmt.Println(len(accountUpdateRequest.Status))
 
 		if len(accountUpdateRequest.Status) > 0 {
 			status := accountUpdateRequest.Status
@@ -49,19 +89,6 @@ func (cv *CustomValidator) SetUpAccountUserValidator() {
 				sl.ReportError(accountUpdateRequest.Type, "accountType", "Type", "", "invalid type account")
 			}
 		}
+
 	}, AccountUpdateRequest{})
-}
-
-// UC Layer and Repo Layer
-
-type AccountUseCase interface {
-	CreateUserAccount(ctx context.Context, username string, password string) (AccountResponse, error)
-	LoginAccount(ctx context.Context, username string, password string) (AccountResponse, error)
-	UpdateUserAccount(ctx context.Context, userId int, typeAccount *db.AccountType, statusAccount *db.AccountStatus, password *string) (AccountResponse, error)
-}
-
-type AccountRepository interface {
-	GetUserAccount(ctx context.Context, username string) (*db.UserAccount, error)
-	InsertUserAccount(ctx context.Context, username string, password string) (*db.UserAccount, error)
-	UpdateUserAccount(ctx context.Context, userId int, typeAccount *db.AccountType, statusAccount *db.AccountStatus, password *string) (*db.UserAccount, error)
 }

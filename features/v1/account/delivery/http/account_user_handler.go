@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"project-management/common"
 	"project-management/domain"
+	"strconv"
 )
 
 type accountUserHandler struct {
@@ -51,9 +52,14 @@ func (handler *accountUserHandler) CreateUserAccountHandler(c echo.Context) erro
 
 func (handler *accountUserHandler) UpdateUserAccountHandler(c echo.Context) error {
 
-	_ = c.Request().Context()
-	userId := c.Param("id")
-	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.String("userId", userId))
+	ctx := c.Request().Context()
+
+	userId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, domain.ErrInvalidRequest(domain.ErrInvalidUserAccountId))
+	}
+
+	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.Int("userId", userId))
 	var data domain.AccountUpdateRequest
 
 	if err := c.Bind(&data); err != nil {
@@ -67,14 +73,22 @@ func (handler *accountUserHandler) UpdateUserAccountHandler(c echo.Context) erro
 		return err
 	}
 	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.Any("data", data))
-	return c.JSON(http.StatusOK, &struct{}{})
-	//updateUserAccount, err := handler.accountUserUC.UpdateUserAccount(ctx, userId, &data.Type, &data.Status, &data.Password)
-	//if err != nil {
-	//	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.String("error", "update user account error"))
-	//	return err
-	//}
-	//
-	//handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.String("success", "updated account"))
-	//return c.JSON(http.StatusOK, updateUserAccount)
+	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.Any("type", data.Type))
+	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.Any("status", data.Status))
+	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.Any("password", data.Password))
+
+	// Prepare data to process
+	accountToUpdate := domain.AccountUpdate{}
+	accountToUpdate.MapAccountUpdateRequestToAccountUpdate(userId, data)
+
+	// Process data
+	updateUserAccount, err := handler.accountUserUC.UpdateUserAccount(ctx, accountToUpdate)
+	if err != nil {
+		handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.String("error", "update user account error"))
+		return err
+	}
+
+	handler.appCtx.Logger.Debug("UpdateUserAccountHandler", zap.String("success", "updated account"))
+	return c.JSON(http.StatusOK, updateUserAccount)
 
 }

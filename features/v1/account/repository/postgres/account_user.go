@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 	"project-management/common"
 	db "project-management/db/sqlc"
 	"project-management/domain"
@@ -56,37 +56,17 @@ func (accountUserRepo *accountUserRepository) InsertUserAccount(
 
 func (accountUserRepo *accountUserRepository) UpdateUserAccount(
 	ctx context.Context,
-	userId int,
-	typeAccount *db.AccountType,
-	statusAccount *db.AccountStatus,
-	password *string,
+	updateUserAccount domain.AccountUpdate,
 ) (*db.UserAccount, error) {
-	accountStatus := db.NullAccountStatus{}
-	accountType := db.NullAccountType{}
-	passwordType := pgtype.Text{}
-
-	if typeAccount != nil {
-		accountType.AccountType = *typeAccount
-		accountType.Valid = true
-	}
-
-	if statusAccount != nil {
-		accountStatus.AccountStatus = *statusAccount
-		accountType.Valid = true
-	}
-
-	if password != nil {
-		passwordType.String = *password
-		passwordType.Valid = true
-	}
+	accountUserRepo.appCtx.Logger.Debug("UpdateUserAccount Repo", zap.Any("status", updateUserAccount))
 
 	query := db.New(accountUserRepo.connPool)
 	account, err := query.UpdateUserAccount(ctx, db.UpdateUserAccountParams{
-		UserID:    int64(userId),
+		UserID:    int64(updateUserAccount.UserId),
 		UpdatedAt: time.Now(),
-		Status:    accountStatus,
-		Type:      accountType,
-		Password:  passwordType,
+		Status:    updateUserAccount.Status,
+		Type:      updateUserAccount.Type,
+		Password:  updateUserAccount.Password,
 	})
 	if err != nil {
 		return nil, err
