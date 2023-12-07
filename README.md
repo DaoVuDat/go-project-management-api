@@ -22,7 +22,7 @@ Welcome to the Project Management API! This API is built using Go, PostgreSQL, s
 
 ## Project Features Checklist
 
-- [ ] **Simple API - user_account model**
+- [x] **Simple API - user_account model**
   - Implement CRUD operations for the user_account model.
 
 - [ ] **Simple API - user_profile model**

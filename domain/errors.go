@@ -2,12 +2,14 @@ package domain
 
 import (
 	"errors"
+	"net/http"
 )
 
 var (
 	ErrUsernameExists       = errors.New("username already exists")
 	ErrBadRequest           = errors.New("bad request")
 	ErrInvalidUserAccountId = errors.New("invalid user account id")
+	ErrInvalidLogin         = errors.New("username does not exists or password incorrect")
 )
 
 type ErrResponse struct {
@@ -16,34 +18,42 @@ type ErrResponse struct {
 	Detail         string `json:"detail"`
 }
 
-func ErrInvalidRequest(err error) *ErrResponse {
+func ErrInvalidRequestResponse(err error) *ErrResponse {
 	return &ErrResponse{
-		HttpStatusCode: 400,
+		HttpStatusCode: http.StatusBadRequest,
 		Message:        "Invalid request.",
 		Detail:         err.Error(),
 	}
 }
 
-func ErrRender(err error) *ErrResponse {
+func ErrRenderResponse(err error) *ErrResponse {
 	return &ErrResponse{
-		HttpStatusCode: 422,
+		HttpStatusCode: http.StatusUnprocessableEntity,
 		Message:        "Error rendering response.",
 		Detail:         err.Error(),
 	}
 }
 
-func ErrInternal(err error) *ErrResponse {
+func ErrInternalResponse(err error) *ErrResponse {
 	return &ErrResponse{
-		HttpStatusCode: 500,
+		HttpStatusCode: http.StatusInternalServerError,
 		Message:        "Internal server error.",
 		Detail:         err.Error(),
 	}
 }
 
-func ErrResourceConflict(err error) *ErrResponse {
+func ErrResourceConflictResponse(err error) *ErrResponse {
 	return &ErrResponse{
-		HttpStatusCode: 409,
+		HttpStatusCode: http.StatusConflict,
 		Message:        "Internal server error.",
+		Detail:         err.Error(),
+	}
+}
+
+func ErrInvalidLoginResponse(err error) *ErrResponse {
+	return &ErrResponse{
+		HttpStatusCode: http.StatusUnauthorized,
+		Message:        "Unauthorized",
 		Detail:         err.Error(),
 	}
 }

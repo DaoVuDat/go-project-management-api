@@ -30,7 +30,7 @@ func (accountUserUC *accountUserUseCase) CreateUserAccount(
 	ctx context.Context,
 	username string,
 	password string,
-) (domain.AccountResponse, error) {
+) (domain.AccountResponseWithToken, error) {
 	accountUserUC.appContext.Logger.Debug("CreateUserAccount UC")
 
 	// Check username is existed ?
@@ -38,41 +38,70 @@ func (accountUserUC *accountUserUseCase) CreateUserAccount(
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			accountUserUC.appContext.Logger.Debug("CreateUserAccount UC", zap.String("error", "general error"))
-			return domain.AccountResponse{}, err
+			return domain.AccountResponseWithToken{}, err
 		}
 	}
 
 	if account != nil {
 		accountUserUC.appContext.Logger.Debug("CreateUserAccount UC", zap.String("error", "user existed"))
 
-		return domain.AccountResponse{}, domain.ErrUsernameExists
+		return domain.AccountResponseWithToken{}, domain.ErrUsernameExists
 	}
 
 	// If it does not exist, create the new one
 	hashedPassword, err := util.HashPassword(password)
 	if err != nil {
-		return domain.AccountResponse{}, err
+		return domain.AccountResponseWithToken{}, err
 	}
 
 	newUserAccount, err := accountUserUC.accountUserRepo.InsertUserAccount(ctx, username, hashedPassword)
 	if err != nil {
-		return domain.AccountResponse{}, err
+		return domain.AccountResponseWithToken{}, err
 	}
-	newUserAccountResponse := domain.AccountResponse{
-		Id:       int(newUserAccount.UserID),
-		Username: newUserAccount.Username,
-		Type:     newUserAccount.Type,
-		Status:   newUserAccount.Status,
+	newUserAccountResponseWithToken := domain.AccountResponseWithToken{
+		AccountResponse: domain.AccountResponse{
+			Id:       int(newUserAccount.UserID),
+			Username: newUserAccount.Username,
+			Type:     newUserAccount.Type,
+			Status:   newUserAccount.Status,
+		},
+		Token: "",
 	}
-	return newUserAccountResponse, nil
+	return newUserAccountResponseWithToken, nil
 }
 
 func (accountUserUC *accountUserUseCase) LoginAccount(
 	ctx context.Context,
 	username string,
 	password string,
-) (domain.AccountResponse, error) {
-	panic(1)
+) (domain.AccountResponseWithToken, error) {
+	account, err := accountUserUC.accountUserRepo.GetUserAccount(ctx, username)
+	if err != nil {
+		accountUserUC.appContext.Logger.Debug("LoginAccount UC", zap.String("error", "dasdas"))
+		if !errors.Is(err, pgx.ErrNoRows) {
+			accountUserUC.appContext.Logger.Debug("LoginAccount UC", zap.String("error", "general error"))
+			return domain.AccountResponseWithToken{}, domain.ErrInvalidLogin
+		}
+	}
+
+	// If user exists, check password
+	err = util.ComparePassword(account.Password, password)
+	if err != nil {
+		return domain.AccountResponseWithToken{}, domain.ErrInvalidLogin
+	}
+
+	// We should return token here too
+	accountResponse := domain.AccountResponseWithToken{
+		AccountResponse: domain.AccountResponse{
+			Id:       int(account.UserID),
+			Username: account.Username,
+			Type:     account.Type,
+			Status:   account.Status,
+		},
+		Token: "",
+	}
+
+	return accountResponse, nil
 }
 
 func (accountUserUC *accountUserUseCase) UpdateUserAccount(

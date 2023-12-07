@@ -116,9 +116,9 @@ func main() {
 	// Setup Default Error Handling
 	r.HTTPErrorHandler = func(err error, c echo.Context) {
 		if errors.Is(err, domain.ErrBadRequest) {
-			err = c.JSON(http.StatusBadRequest, domain.ErrInvalidRequest(err))
+			err = c.JSON(http.StatusBadRequest, domain.ErrInvalidRequestResponse(err))
 		} else {
-			err = c.JSON(http.StatusInternalServerError, domain.ErrInternal(err))
+			err = c.JSON(http.StatusInternalServerError, domain.ErrInternalResponse(err))
 		}
 		if err != nil {
 			c.Logger().Error(err)

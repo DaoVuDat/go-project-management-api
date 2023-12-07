@@ -30,11 +30,16 @@ type AccountResponse struct {
 	Status   db.AccountStatus `json:"status"`
 }
 
+type AccountResponseWithToken struct {
+	AccountResponse
+	Token string `json:"token"`
+}
+
 // UC Layer and Repo Layer
 
 type AccountUseCase interface {
-	CreateUserAccount(ctx context.Context, username string, password string) (AccountResponse, error)
-	LoginAccount(ctx context.Context, username string, password string) (AccountResponse, error)
+	CreateUserAccount(ctx context.Context, username string, password string) (AccountResponseWithToken, error)
+	LoginAccount(ctx context.Context, username string, password string) (AccountResponseWithToken, error)
 	UpdateUserAccount(ctx context.Context, updateUserAccount AccountUpdate) (AccountResponse, error)
 }
 
