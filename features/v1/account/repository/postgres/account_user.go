@@ -1,4 +1,4 @@
-package postgres
+package postgresuseracc
 
 import (
 	"context"

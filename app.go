@@ -23,51 +23,6 @@ import (
 	"time"
 )
 
-type GlobalEnvConfig struct {
-	DBSource        string        `mapstructure:"DB_SOURCE"`
-	ServerAddress   string        `mapstructure:"SERVER_ADDRESS"`
-	MaxConnLifetime time.Duration `mapstructure:"MAX_CONN_LIFETIME"`
-	MaxConnIdleTime time.Duration `mapstructure:"MAX_CONN_IDLE_TIME"`
-	MaxConn         int32         `mapstructure:"MAX_CONN"`
-	MinConn         int32         `mapstructure:"MIN_CONN"`
-}
-
-func loadConfig(path string) (*GlobalEnvConfig, error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigFile(".env")
-	viper.AutomaticEnv()
-
-	var config *GlobalEnvConfig
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	err = viper.Unmarshal(&config)
-	return config, nil
-}
-
-func connectDb(ctx context.Context, appConfig GlobalEnvConfig) (*pgxpool.Pool, error) {
-	config, err := pgxpool.ParseConfig(appConfig.DBSource)
-	// Apply config
-	config.MaxConnLifetime = appConfig.MaxConnLifetime
-	config.MaxConns = appConfig.MaxConn
-	config.MinConns = appConfig.MinConn
-	config.MaxConnIdleTime = appConfig.MaxConnIdleTime
-
-	if err != nil {
-		return nil, err
-	}
-
-	dbPool, err := pgxpool.NewWithConfig(ctx, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return dbPool, err
-}
-
 func main() {
 	//============================ Loading config
 	globalEnvConfig, err := loadConfig(".")
@@ -96,8 +51,9 @@ func main() {
 
 	//============================ Setup AppCtx
 	appCtx := common.AppContext{
-		Logger: logger,
-		Pool:   dbPool,
+		Logger:   logger,
+		Pool:     dbPool,
+		GbConfig: globalEnvConfig,
 	}
 
 	//============================ Setup Validator
@@ -171,7 +127,7 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -182,4 +138,40 @@ func main() {
 		r.Logger.Fatal("main: Server was shutdown gracefully")
 	}
 
+}
+
+func loadConfig(path string) (*domain.GlobalEnvConfig, error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigFile(".env")
+	viper.AutomaticEnv()
+
+	var config *domain.GlobalEnvConfig
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	err = viper.Unmarshal(&config)
+	return config, nil
+}
+
+func connectDb(ctx context.Context, appConfig domain.GlobalEnvConfig) (*pgxpool.Pool, error) {
+	config, err := pgxpool.ParseConfig(appConfig.DBSource)
+	// Apply config
+	config.MaxConnLifetime = appConfig.MaxConnLifetime
+	config.MaxConns = appConfig.MaxConn
+	config.MinConns = appConfig.MinConn
+	config.MaxConnIdleTime = appConfig.MaxConnIdleTime
+
+	if err != nil {
+		return nil, err
+	}
+
+	dbPool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbPool, err
 }

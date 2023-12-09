@@ -35,29 +35,29 @@ func (q *Queries) GetUserProfileById(ctx context.Context, id int64) (UserProfile
 
 const updateUserProfile = `-- name: UpdateUserProfile :one
 UPDATE user_profile
-SET first_name = $2,
-    last_name  = $3,
-    image_url  = $4,
-    updated_at = $5
+SET first_name = COALESCE($3, first_name),
+    last_name  = COALESCE($4, last_name),
+    image_url  = COALESCE($5, image_url),
+    updated_at = $2
 WHERE id = $1
 RETURNING id, first_name, last_name, created_at, updated_at, image_url
 `
 
 type UpdateUserProfileParams struct {
 	ID        int64       `db:"id"`
-	FirstName string      `db:"first_name"`
-	LastName  string      `db:"last_name"`
-	ImageUrl  pgtype.Text `db:"image_url"`
 	UpdatedAt time.Time   `db:"updated_at"`
+	FirstName pgtype.Text `db:"first_name"`
+	LastName  pgtype.Text `db:"last_name"`
+	ImageUrl  pgtype.Text `db:"image_url"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UserProfile, error) {
 	row := q.db.QueryRow(ctx, updateUserProfile,
 		arg.ID,
+		arg.UpdatedAt,
 		arg.FirstName,
 		arg.LastName,
 		arg.ImageUrl,
-		arg.UpdatedAt,
 	)
 	var i UserProfile
 	err := row.Scan(

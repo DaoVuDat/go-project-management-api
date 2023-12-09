@@ -1,10 +1,11 @@
-package usecase
+package usecaseuseracc
 
 import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
+	jwttoken "project-management/auth"
 	"project-management/common"
 	"project-management/domain"
 	"project-management/util"
@@ -58,6 +59,17 @@ func (accountUserUC *accountUserUseCase) CreateUserAccount(
 	if err != nil {
 		return domain.AccountResponseWithToken{}, err
 	}
+
+	// Create access token
+	accessToken, _, err := jwttoken.CreateToken(
+		newUserAccount,
+		accountUserUC.appContext.GbConfig.TokenExpiredTime,
+		accountUserUC.appContext.GbConfig.TokenPrivateKey,
+	)
+	if err != nil {
+		return domain.AccountResponseWithToken{}, err
+	}
+
 	newUserAccountResponseWithToken := domain.AccountResponseWithToken{
 		AccountResponse: domain.AccountResponse{
 			Id:       int(newUserAccount.UserID),
@@ -65,7 +77,7 @@ func (accountUserUC *accountUserUseCase) CreateUserAccount(
 			Type:     newUserAccount.Type,
 			Status:   newUserAccount.Status,
 		},
-		Token: "",
+		Token: accessToken,
 	}
 	return newUserAccountResponseWithToken, nil
 }
@@ -75,6 +87,7 @@ func (accountUserUC *accountUserUseCase) LoginAccount(
 	username string,
 	password string,
 ) (domain.AccountResponseWithToken, error) {
+
 	account, err := accountUserUC.accountUserRepo.GetUserAccount(ctx, username)
 	if err != nil {
 		accountUserUC.appContext.Logger.Debug("LoginAccount UC", zap.String("error", "dasdas"))
@@ -90,7 +103,13 @@ func (accountUserUC *accountUserUseCase) LoginAccount(
 		return domain.AccountResponseWithToken{}, domain.ErrInvalidLogin
 	}
 
-	// We should return token here too
+	// Create access token
+	accessToken, _, err := jwttoken.CreateToken(
+		account,
+		accountUserUC.appContext.GbConfig.TokenExpiredTime,
+		accountUserUC.appContext.GbConfig.TokenPrivateKey,
+	)
+	// We should return auth here too
 	accountResponse := domain.AccountResponseWithToken{
 		AccountResponse: domain.AccountResponse{
 			Id:       int(account.UserID),
@@ -98,7 +117,7 @@ func (accountUserUC *accountUserUseCase) LoginAccount(
 			Type:     account.Type,
 			Status:   account.Status,
 		},
-		Token: "",
+		Token: accessToken,
 	}
 
 	return accountResponse, nil
@@ -107,27 +126,37 @@ func (accountUserUC *accountUserUseCase) LoginAccount(
 func (accountUserUC *accountUserUseCase) UpdateUserAccount(
 	ctx context.Context,
 	updateUserAccount domain.AccountUpdate,
-) (domain.AccountResponse, error) {
+) (domain.AccountResponseWithToken, error) {
 
 	// Hash update password if update password does exist
 	if updateUserAccount.Password.Valid {
 		hp, err := util.HashPassword(updateUserAccount.Password.String)
 		if err != nil {
-			return domain.AccountResponse{}, err
+			return domain.AccountResponseWithToken{}, err
 		}
 		updateUserAccount.Password.String = hp
 	}
 
 	updatedAccount, err := accountUserUC.accountUserRepo.UpdateUserAccount(ctx, updateUserAccount)
 	if err != nil {
-		return domain.AccountResponse{}, err
+		return domain.AccountResponseWithToken{}, err
 	}
 
-	updatedAccountResponse := domain.AccountResponse{
-		Id:       int(updatedAccount.UserID),
-		Username: updatedAccount.Username,
-		Type:     updatedAccount.Type,
-		Status:   updatedAccount.Status,
+	// Create access token
+	accessToken, _, err := jwttoken.CreateToken(
+		updatedAccount,
+		accountUserUC.appContext.GbConfig.TokenExpiredTime,
+		accountUserUC.appContext.GbConfig.TokenPrivateKey,
+	)
+
+	updatedAccountResponse := domain.AccountResponseWithToken{
+		AccountResponse: domain.AccountResponse{
+			Id:       int(updatedAccount.UserID),
+			Username: updatedAccount.Username,
+			Type:     updatedAccount.Type,
+			Status:   updatedAccount.Status,
+		},
+		Token: accessToken,
 	}
 
 	return updatedAccountResponse, nil

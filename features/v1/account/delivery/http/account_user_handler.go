@@ -3,6 +3,7 @@ package httpuseracc
 import (
 	"errors"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"net/http"
 	"project-management/common"
 	"project-management/domain"
@@ -20,9 +21,10 @@ func SetupAccountUserHandler(group *echo.Group, appContext common.AppContext, ac
 		accountUserUC: accountUserUC,
 	}
 
-	group.PATCH("/account/:id", handler.UpdateUserAccountHandler)
-	group.POST("/account", handler.CreateUserAccountHandler)
-	group.POST("/account/login", handler.LoginUserAccount)
+	g := group.Group("/account")
+	g.PATCH("/:id", handler.UpdateUserAccountHandler)
+	g.POST("/login", handler.LoginUserAccountHandler)
+	g.POST("/", handler.CreateUserAccountHandler)
 }
 
 /*
@@ -79,7 +81,8 @@ func (handler *accountUserHandler) UpdateUserAccountHandler(c echo.Context) erro
 
 }
 
-func (handler *accountUserHandler) LoginUserAccount(c echo.Context) error {
+func (handler *accountUserHandler) LoginUserAccountHandler(c echo.Context) error {
+	handler.appCtx.Logger.Info("LoginUserAccountHandler", zap.String("Begin", "Here"))
 	ctx := c.Request().Context()
 	var data domain.AccountCreateAndLoginRequest
 

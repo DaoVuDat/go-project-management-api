@@ -3,7 +3,9 @@ module project-management
 go 1.21
 
 require (
-	github.com/go-chi/render v1.0.3
+	github.com/go-playground/validator/v10 v10.16.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/google/uuid v1.1.2
 	github.com/jackc/pgx/v5 v5.5.0
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/labstack/gommon v0.4.1
@@ -13,12 +15,10 @@ require (
 )
 
 require (
-	github.com/ajg/form v1.5.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.16.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

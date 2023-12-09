@@ -32,7 +32,7 @@ type AccountResponse struct {
 
 type AccountResponseWithToken struct {
 	AccountResponse
-	Token string `json:"token"`
+	Token string `json:"accessToken"`
 }
 
 // UC Layer and Repo Layer
@@ -40,7 +40,7 @@ type AccountResponseWithToken struct {
 type AccountUseCase interface {
 	CreateUserAccount(ctx context.Context, username string, password string) (AccountResponseWithToken, error)
 	LoginAccount(ctx context.Context, username string, password string) (AccountResponseWithToken, error)
-	UpdateUserAccount(ctx context.Context, updateUserAccount AccountUpdate) (AccountResponse, error)
+	UpdateUserAccount(ctx context.Context, updateUserAccount AccountUpdate) (AccountResponseWithToken, error)
 }
 
 type AccountRepository interface {

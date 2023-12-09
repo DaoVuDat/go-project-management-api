@@ -10,6 +10,8 @@ var (
 	ErrBadRequest           = errors.New("bad request")
 	ErrInvalidUserAccountId = errors.New("invalid user account id")
 	ErrInvalidLogin         = errors.New("username does not exists or password incorrect")
+	ErrInvalidToken         = errors.New("invalid token")
+	ErrExpiredToken         = errors.New("expired token")
 )
 
 type ErrResponse struct {
@@ -51,6 +53,14 @@ func ErrResourceConflictResponse(err error) *ErrResponse {
 }
 
 func ErrInvalidLoginResponse(err error) *ErrResponse {
+	return &ErrResponse{
+		HttpStatusCode: http.StatusUnauthorized,
+		Message:        "Unauthorized",
+		Detail:         err.Error(),
+	}
+}
+
+func ErrUnauthorizedResponse(err error) *ErrResponse {
 	return &ErrResponse{
 		HttpStatusCode: http.StatusUnauthorized,
 		Message:        "Unauthorized",
