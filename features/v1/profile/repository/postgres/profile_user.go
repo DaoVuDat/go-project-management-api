@@ -13,10 +13,10 @@ type profileUserRepo struct {
 	connPool   *pgxpool.Pool
 }
 
-func NewPostgresUserProfileRepo(appCtx common.AppContext, connPool *pgxpool.Pool) domain.UserProfileRepository {
+func NewPostgresUserProfileRepo(appCtx common.AppContext) domain.UserProfileRepository {
 	return &profileUserRepo{
 		appContext: appCtx,
-		connPool:   connPool,
+		connPool:   appCtx.Pool,
 	}
 }
 
