@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	jwttoken "project-management/auth"
 	"project-management/common"
+	db "project-management/db/sqlc"
 	"project-management/domain"
 	"project-management/util"
 )
@@ -13,12 +14,18 @@ import (
 type accountUserUseCase struct {
 	appContext      common.AppContext
 	accountUserRepo domain.AccountRepository
+	userProfileRepo domain.UserProfileRepository
 }
 
-func NewAccountUserUseCase(appCtx common.AppContext, accountUserRepo domain.AccountRepository) domain.AccountUseCase {
+func NewAccountUserUseCase(
+	appCtx common.AppContext,
+	accountUserRepo domain.AccountRepository,
+	userProfileRepo domain.UserProfileRepository,
+) domain.AccountUseCase {
 	return &accountUserUseCase{
 		appContext:      appCtx,
 		accountUserRepo: accountUserRepo,
+		userProfileRepo: userProfileRepo,
 	}
 }
 
@@ -49,7 +56,35 @@ func (accountUserUC *accountUserUseCase) CreateUserAccount(
 		return domain.AccountResponseWithToken{}, err
 	}
 
-	newUserAccount, err := accountUserUC.accountUserRepo.InsertUserAccount(ctx, username, hashedPassword)
+	accountUserUC.appContext.Logger.Info("CreateUserAccount")
+	// open transaction
+	tx, err := accountUserUC.appContext.Pool.Begin(ctx)
+	if err != nil {
+		return domain.AccountResponseWithToken{}, err
+	}
+	defer tx.Rollback(ctx)
+	queries := db.New(accountUserUC.appContext.Pool)
+	qtx := queries.WithTx(tx)
+
+	newUserAccount, err := accountUserUC.accountUserRepo.InsertUserAccount(ctx, qtx, username, hashedPassword)
+	if err != nil {
+		return domain.AccountResponseWithToken{}, err
+	}
+
+	// Create User Profile
+	userProfileCreate := domain.UserProfileCreate{
+		UserId:    int(newUserAccount.UserID),
+		FirstName: "fname",
+		LastName:  "lname",
+	}
+
+	_, err = accountUserUC.userProfileRepo.CreateUserProfile(ctx, qtx, userProfileCreate)
+	if err != nil {
+		return domain.AccountResponseWithToken{}, err
+	}
+
+	err = tx.Commit(ctx)
+
 	if err != nil {
 		return domain.AccountResponseWithToken{}, err
 	}

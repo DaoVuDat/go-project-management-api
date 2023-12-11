@@ -22,9 +22,9 @@ func SetupAccountUserHandler(group *echo.Group, appContext common.AppContext, ac
 	}
 
 	g := group.Group("/account")
+	g.POST("/", handler.CreateUserAccountHandler)
 	g.PATCH("/:id", handler.UpdateUserAccountHandler)
 	g.POST("/login", handler.LoginUserAccountHandler)
-	g.POST("/", handler.CreateUserAccountHandler)
 }
 
 /*

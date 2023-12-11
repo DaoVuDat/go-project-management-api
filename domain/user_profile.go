@@ -34,12 +34,19 @@ type UserProfileUseCase interface {
 }
 
 type UserProfileRepository interface {
+	CreateUserProfile(ctx context.Context, queries *db.Queries, userProfileCreate UserProfileCreate) (*db.UserProfile, error)
 	GetUserProfile(ctx context.Context, id int) (*db.UserProfile, error)
 	UpdateUserProfile(ctx context.Context, userProfileUpdate UserProfileUpdate) (*db.UserProfile, error)
 	UpdateUserProfileImageUrl(ctx context.Context, userProfileImageUrlUpdate UserProfileImageUrlUpdate) (*db.UserProfile, error)
 }
 
 // Utils
+
+type UserProfileCreate struct {
+	UserId    int
+	FirstName string
+	LastName  string
+}
 
 type UserProfileUpdate struct {
 	UserId    int

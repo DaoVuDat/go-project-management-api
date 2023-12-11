@@ -3,7 +3,6 @@ package postgresuseracc
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.uber.org/zap"
 	"project-management/common"
 	db "project-management/db/sqlc"
 	"project-management/domain"
@@ -31,6 +30,7 @@ func (accountUserRepo *accountUserRepository) GetUserAccount(
 	username string,
 ) (*db.UserAccount, error) {
 	query := db.New(accountUserRepo.connPool)
+
 	account, err := query.GetUserNameAccount(ctx, username)
 	if err != nil {
 		return nil, err
@@ -40,11 +40,11 @@ func (accountUserRepo *accountUserRepository) GetUserAccount(
 
 func (accountUserRepo *accountUserRepository) InsertUserAccount(
 	ctx context.Context,
+	queries *db.Queries,
 	username,
 	password string,
 ) (*db.UserAccount, error) {
-	query := db.New(accountUserRepo.connPool)
-	account, err := query.AddUserAccount(ctx, db.AddUserAccountParams{
+	account, err := queries.AddUserAccount(ctx, db.AddUserAccountParams{
 		Username: username,
 		Password: password,
 	})
@@ -58,7 +58,6 @@ func (accountUserRepo *accountUserRepository) UpdateUserAccount(
 	ctx context.Context,
 	updateUserAccount domain.AccountUpdate,
 ) (*db.UserAccount, error) {
-	accountUserRepo.appCtx.Logger.Debug("UpdateUserAccount Repo", zap.Any("status", updateUserAccount))
 
 	query := db.New(accountUserRepo.connPool)
 	account, err := query.UpdateUserAccount(ctx, db.UpdateUserAccountParams{

@@ -45,7 +45,7 @@ type AccountUseCase interface {
 
 type AccountRepository interface {
 	GetUserAccount(ctx context.Context, username string) (*db.UserAccount, error)
-	InsertUserAccount(ctx context.Context, username string, password string) (*db.UserAccount, error)
+	InsertUserAccount(ctx context.Context, queries *db.Queries, username string, password string) (*db.UserAccount, error)
 	UpdateUserAccount(ctx context.Context, updateUserAccount AccountUpdate) (*db.UserAccount, error)
 }
 

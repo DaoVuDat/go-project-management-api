@@ -23,7 +23,7 @@ func SetupRestVersion1Api(appCtx common.AppContext, groupRoute *echo.Group) {
 	userProfileRepo := postgresprofileuser.NewPostgresUserProfileRepo(appCtx)
 
 	// Use case
-	accountUseCase := usecaseuseracc.NewAccountUserUseCase(appCtx, accountRepo)
+	accountUseCase := usecaseuseracc.NewAccountUserUseCase(appCtx, accountRepo, userProfileRepo)
 	userProfileUseCase := usecaseprofileuser.NewUserProfileUseCase(appCtx, userProfileRepo)
 
 	// Setup Handlers

@@ -2,6 +2,7 @@ package postgresprofileuser
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"project-management/common"
 	db "project-management/db/sqlc"
@@ -19,6 +20,23 @@ func NewPostgresUserProfileRepo(appCtx common.AppContext) domain.UserProfileRepo
 		appContext: appCtx,
 		connPool:   appCtx.Pool,
 	}
+}
+
+func (repo *profileUserRepo) CreateUserProfile(ctx context.Context, queries *db.Queries, userProfileCreate domain.UserProfileCreate) (*db.UserProfile, error) {
+	userProfile, err := queries.CreateUserProfile(ctx, db.CreateUserProfileParams{
+		ID:        int64(userProfileCreate.UserId),
+		FirstName: userProfileCreate.FirstName,
+		LastName:  userProfileCreate.LastName,
+		ImageUrl: pgtype.Text{
+			String: "",
+			Valid:  true,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &userProfile, nil
 }
 
 func (repo *profileUserRepo) GetUserProfile(ctx context.Context, id int) (*db.UserProfile, error) {
