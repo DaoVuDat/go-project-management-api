@@ -34,10 +34,10 @@ Welcome to the Project Management API! This API is built using Go, PostgreSQL, s
 - [ ] **Simple API - project model**
   - Create API routes for handling project-related operations.
 
-- [ ] **Authentication via email and password**
+- [x] **Authentication via email and password**
   - Set up user authentication using email and password.
 
-- [ ] **Authorization**
+- [x] **Authorization**
   - Implement authorization logic to control access to various API endpoints.
 
 - [ ] **Social Authentication**
