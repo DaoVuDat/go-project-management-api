@@ -12,6 +12,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createUserProfile = `-- name: CreateUserProfile :one
+INSERT INTO user_profile(id, first_name, last_name, image_url)
+VALUES ($1, $2, $3, $4)
+RETURNING id, first_name, last_name, created_at, updated_at, image_url
+`
+
+type CreateUserProfileParams struct {
+	ID        int64       `db:"id"`
+	FirstName string      `db:"first_name"`
+	LastName  string      `db:"last_name"`
+	ImageUrl  pgtype.Text `db:"image_url"`
+}
+
+func (q *Queries) CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (UserProfile, error) {
+	row := q.db.QueryRow(ctx, createUserProfile,
+		arg.ID,
+		arg.FirstName,
+		arg.LastName,
+		arg.ImageUrl,
+	)
+	var i UserProfile
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ImageUrl,
+	)
+	return i, err
+}
+
 const getUserProfileById = `-- name: GetUserProfileById :one
 SELECT id, first_name, last_name, created_at, updated_at, image_url
 FROM user_profile
@@ -33,11 +65,36 @@ func (q *Queries) GetUserProfileById(ctx context.Context, id int64) (UserProfile
 	return i, err
 }
 
+const updateImageUrlUserProfile = `-- name: UpdateImageUrlUserProfile :one
+UPDATE user_profile
+SET image_url = $2
+WHERE id = $1
+RETURNING id, first_name, last_name, created_at, updated_at, image_url
+`
+
+type UpdateImageUrlUserProfileParams struct {
+	ID       int64       `db:"id"`
+	ImageUrl pgtype.Text `db:"image_url"`
+}
+
+func (q *Queries) UpdateImageUrlUserProfile(ctx context.Context, arg UpdateImageUrlUserProfileParams) (UserProfile, error) {
+	row := q.db.QueryRow(ctx, updateImageUrlUserProfile, arg.ID, arg.ImageUrl)
+	var i UserProfile
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ImageUrl,
+	)
+	return i, err
+}
+
 const updateUserProfile = `-- name: UpdateUserProfile :one
 UPDATE user_profile
 SET first_name = COALESCE($3, first_name),
     last_name  = COALESCE($4, last_name),
-    image_url  = COALESCE($5, image_url),
     updated_at = $2
 WHERE id = $1
 RETURNING id, first_name, last_name, created_at, updated_at, image_url
@@ -48,7 +105,6 @@ type UpdateUserProfileParams struct {
 	UpdatedAt time.Time   `db:"updated_at"`
 	FirstName pgtype.Text `db:"first_name"`
 	LastName  pgtype.Text `db:"last_name"`
-	ImageUrl  pgtype.Text `db:"image_url"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UserProfile, error) {
@@ -57,7 +113,6 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		arg.UpdatedAt,
 		arg.FirstName,
 		arg.LastName,
-		arg.ImageUrl,
 	)
 	var i UserProfile
 	err := row.Scan(

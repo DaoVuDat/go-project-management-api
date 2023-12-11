@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "project-management/db/sqlc"
 )
@@ -9,8 +10,8 @@ import (
 // Request and Response model
 
 type UserProfileUpdateRequest struct {
-	FirstName string `json:"firstName,omitempty" validate:"gt=0"`
-	LastName  string `json:"lastName,omitempty" validate:"gt=0"`
+	FirstName string `json:"firstName,omitempty"`
+	LastName  string `json:"lastName,omitempty"`
 }
 
 type UserProfileImageUrlRequest struct {
@@ -48,7 +49,7 @@ type UserProfileUpdate struct {
 
 type UserProfileImageUrlUpdate struct {
 	UserId   int
-	ImageUrl string
+	ImageUrl pgtype.Text
 }
 
 func (user *UserProfileUpdate) MapUserProfileUpdateRequestToUserProfileUpdate(id int, data UserProfileUpdateRequest) {
@@ -65,5 +66,23 @@ func (user *UserProfileUpdate) MapUserProfileUpdateRequestToUserProfileUpdate(id
 
 func (user *UserProfileImageUrlUpdate) MapUserProfileImageUrlUpdateRequestToUserProfileImageUrlUpdate(id int, data UserProfileImageUrlRequest) {
 	user.UserId = id
-	user.ImageUrl = data.ImageURL
+	user.ImageUrl = pgtype.Text{
+		String: data.ImageURL,
+		Valid:  len(data.ImageURL) > 0,
+	}
+}
+
+// Validations
+
+func (req UserProfileUpdateRequest) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.FirstName, validation.When(
+			req.FirstName != "",
+			validation.Length(1, 100).Error("must be at least 1")),
+		),
+		validation.Field(&req.LastName, validation.When(
+			req.LastName != "",
+			validation.Length(1, 100).Error("must be at least 1")),
+		),
+	)
 }

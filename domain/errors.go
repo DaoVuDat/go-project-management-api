@@ -14,6 +14,10 @@ var (
 	ErrExpiredToken         = errors.New("expired token")
 )
 
+func ErrCustom(errorStr string) error {
+	return errors.New(errorStr)
+}
+
 type ErrResponse struct {
 	HttpStatusCode int    `json:"code"`
 	Message        string `json:"message"`

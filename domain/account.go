@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
-	"github.com/go-playground/validator/v10"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	//"project-management/common"
@@ -74,26 +74,44 @@ func (a *AccountUpdate) MapAccountUpdateRequestToAccountUpdate(userId int, data 
 	}
 }
 
-// Setup custom validators
+// Setup validators
 
-func (cv *CustomValidator) SetUpAccountUserValidator() {
-	cv.Validator.RegisterStructValidation(func(sl validator.StructLevel) {
-		fmt.Println("Validate")
-		accountUpdateRequest := sl.Current().Interface().(AccountUpdateRequest)
+func (req AccountCreateAndLoginRequest) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.Username,
+			validation.Required.Error("userName is required"),
+			validation.Length(6, 20).Error("the userName must be in range 6 to 20 characters"),
+		),
+		validation.Field(&req.Password,
+			validation.Required.Error("password is required"),
+			validation.Min(6).Error("the password must be at least 8 characters"),
+		),
+	)
+}
 
-		if len(accountUpdateRequest.Status) > 0 {
-			status := accountUpdateRequest.Status
-			if status != db.AccountStatusPending && status != db.AccountStatusActivated {
-				sl.ReportError(accountUpdateRequest.Status, "accountStatus", "Status", "", "invalid status account")
-			}
-		}
-
-		if len(accountUpdateRequest.Type) > 0 {
-			typeAccount := accountUpdateRequest.Type
-			if typeAccount != db.AccountTypeClient && typeAccount != db.AccountTypeAdmin {
-				sl.ReportError(accountUpdateRequest.Type, "accountType", "Type", "", "invalid type account")
-			}
-		}
-
-	}, AccountUpdateRequest{})
+func (req AccountUpdateRequest) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.Type, validation.When(
+			req.Type != "",
+			validation.In(
+				db.AccountTypeAdmin,
+				db.AccountTypeClient,
+			).Error(fmt.Sprintf("must be %s or %s", db.AccountTypeAdmin, db.AccountTypeClient)),
+		)),
+		validation.Field(&req.Status,
+			validation.When(
+				req.Status != "",
+				validation.In(
+					db.AccountStatusActivated,
+					db.AccountStatusPending,
+				).Error(fmt.Sprintf("must be %s or %s", db.AccountStatusActivated, db.AccountStatusPending)),
+			),
+		),
+		validation.Field(&req.Password,
+			validation.When(
+				req.Password != "",
+				validation.Length(6, 100).Error("must be at least 8 characters"),
+			),
+		),
+	)
 }

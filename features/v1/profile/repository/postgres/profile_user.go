@@ -6,6 +6,7 @@ import (
 	"project-management/common"
 	db "project-management/db/sqlc"
 	"project-management/domain"
+	"time"
 )
 
 type profileUserRepo struct {
@@ -21,13 +22,39 @@ func NewPostgresUserProfileRepo(appCtx common.AppContext) domain.UserProfileRepo
 }
 
 func (repo *profileUserRepo) GetUserProfile(ctx context.Context, id int) (*db.UserProfile, error) {
-	panic(1)
+
+	query := db.New(repo.connPool)
+	userProfile, err := query.GetUserProfileById(ctx, int64(id))
+	if err != nil {
+		return nil, err
+	}
+	return &userProfile, nil
 }
 
 func (repo *profileUserRepo) UpdateUserProfile(ctx context.Context, userProfileUpdate domain.UserProfileUpdate) (*db.UserProfile, error) {
-	panic(1)
+	query := db.New(repo.connPool)
+	userProfile, err := query.UpdateUserProfile(ctx, db.UpdateUserProfileParams{
+		ID:        int64(userProfileUpdate.UserId),
+		UpdatedAt: time.Now(),
+		FirstName: userProfileUpdate.FirstName,
+		LastName:  userProfileUpdate.LastName,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return &userProfile, nil
 }
 
 func (repo *profileUserRepo) UpdateUserProfileImageUrl(ctx context.Context, userProfileImageUrlUpdate domain.UserProfileImageUrlUpdate) (*db.UserProfile, error) {
-	panic(1)
+	query := db.New(repo.connPool)
+	userProfile, err := query.UpdateImageUrlUserProfile(ctx, db.UpdateImageUrlUserProfileParams{
+		ID:       int64(userProfileImageUrlUpdate.UserId),
+		ImageUrl: userProfileImageUrlUpdate.ImageUrl,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &userProfile, nil
 }

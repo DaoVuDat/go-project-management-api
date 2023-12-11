@@ -2,6 +2,8 @@ package usecaseprofileuser
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"project-management/common"
 	"project-management/domain"
 )
@@ -19,13 +21,51 @@ func NewUserProfileUseCase(appCtx common.AppContext, userProfileRepo domain.User
 }
 
 func (uc *profileUserUC) GetUserProfile(ctx context.Context, id int) (domain.UserProfileResponse, error) {
-	panic(1)
+	userProfile, err := uc.userProfileRepository.GetUserProfile(ctx, id)
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return domain.UserProfileResponse{}, domain.ErrInvalidUserAccountId
+		}
+		return domain.UserProfileResponse{}, err
+	}
+
+	userProfileResponse := domain.UserProfileResponse{
+		Id:        int(userProfile.ID),
+		FirstName: userProfile.FirstName,
+		LastName:  userProfile.LastName,
+		ImageUrl:  userProfile.ImageUrl.String,
+	}
+
+	return userProfileResponse, nil
 }
 
 func (uc *profileUserUC) UpdateUserProfile(ctx context.Context, userProfileUpdate domain.UserProfileUpdate) (domain.UserProfileResponse, error) {
-	panic(1)
+	userProfile, err := uc.userProfileRepository.UpdateUserProfile(ctx, userProfileUpdate)
+	if err != nil {
+		return domain.UserProfileResponse{}, err
+	}
+
+	userProfileResponse := domain.UserProfileResponse{
+		Id:        int(userProfile.ID),
+		FirstName: userProfile.FirstName,
+		LastName:  userProfile.LastName,
+		ImageUrl:  userProfile.ImageUrl.String,
+	}
+
+	return userProfileResponse, nil
 }
 
 func (uc *profileUserUC) UpdateUserProfileImageUrl(ctx context.Context, userProfileImageUrlUpdate domain.UserProfileImageUrlUpdate) (domain.UserProfileResponse, error) {
-	panic(1)
+	userProfile, err := uc.userProfileRepository.UpdateUserProfileImageUrl(ctx, userProfileImageUrlUpdate)
+	if err != nil {
+		return domain.UserProfileResponse{}, err
+	}
+
+	userProfileResponse := domain.UserProfileResponse{
+		Id:        int(userProfile.ID),
+		FirstName: userProfile.FirstName,
+		LastName:  userProfile.LastName,
+		ImageUrl:  userProfile.ImageUrl.String,
+	}
+	return userProfileResponse, nil
 }

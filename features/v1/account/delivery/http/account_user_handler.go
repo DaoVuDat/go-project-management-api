@@ -63,8 +63,8 @@ func (handler *accountUserHandler) UpdateUserAccountHandler(c echo.Context) erro
 	if err := c.Bind(&data); err != nil {
 		return c.JSON(http.StatusBadRequest, domain.ErrInvalidRequestResponse(err))
 	}
-	if err := c.Validate(data); err != nil {
-		return err
+	if err := data.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, domain.ErrInvalidRequestResponse(err))
 	}
 
 	// Prepare data to process

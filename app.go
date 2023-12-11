@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -56,26 +55,14 @@ func main() {
 		GbConfig: globalEnvConfig,
 	}
 
-	//============================ Setup Validator
-	validatorReq := &domain.CustomValidator{
-		Validator: validator.New(validator.WithRequiredStructEnabled()),
-	}
-
-	validatorReq.SetUpAccountUserValidator()
-
 	//============================ Create Mux Router
 	r := echo.New()
 	//r.Validator = validatorReq
 	r.Logger.SetLevel(log.INFO)
-	r.Validator = validatorReq
 
 	// Setup Default Error Handling
 	r.HTTPErrorHandler = func(err error, c echo.Context) {
-		if errors.Is(err, domain.ErrBadRequest) {
-			err = c.JSON(http.StatusBadRequest, domain.ErrInvalidRequestResponse(err))
-		} else {
-			err = c.JSON(http.StatusInternalServerError, domain.ErrInternalResponse(err))
-		}
+		err = c.JSON(http.StatusInternalServerError, domain.ErrInternalResponse(err))
 		if err != nil {
 			c.Logger().Error(err)
 		}
