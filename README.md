@@ -17,6 +17,9 @@ Welcome to the Project Management API! This API is built using Go, PostgreSQL, s
 - [x] **Utilize go-migration**
   - Implement database migrations using go-migration to manage schema changes.
 
+- [x] **Integrate ozzo-validation**
+  - Validate incoming requests
+  
 - [ ] **Other Libraries (Future)**
 
 
@@ -25,7 +28,7 @@ Welcome to the Project Management API! This API is built using Go, PostgreSQL, s
 - [x] **Simple API - user_account model**
   - Implement CRUD operations for the user_account model.
 
-- [ ] **Simple API - user_profile model**
+- [x] **Simple API - user_profile model**
   - Develop API endpoints to manage user profiles.
 
 - [ ] **Simple API - project model**
