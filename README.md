@@ -1,6 +1,6 @@
 # Project Management API
 
-Welcome to the Project Management API! This API is built using Go, PostgreSQL, sqlc, go-chi router, Air, go-migration, and more. Below is a checklist to guide you through setting up and implementing various features.
+Welcome to the Project Management API! This API is built using Go, PostgreSQL, sqlc, Echo Framework, Air, go-migration, and more. Below is a checklist to guide you through setting up and implementing various features.
 
 ## Project Setup Checklist
 

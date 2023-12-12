@@ -2,6 +2,7 @@ package httpuseracc
 
 import (
 	"errors"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"net/http"
@@ -63,7 +64,9 @@ func (handler *accountUserHandler) UpdateUserAccountHandler(c echo.Context) erro
 	if err := c.Bind(&data); err != nil {
 		return c.JSON(http.StatusBadRequest, domain.ErrInvalidRequestResponse(err))
 	}
+
 	if err := data.Validate(); err != nil {
+		fmt.Println("error")
 		return c.JSON(http.StatusBadRequest, domain.ErrInvalidRequestResponse(err))
 	}
 

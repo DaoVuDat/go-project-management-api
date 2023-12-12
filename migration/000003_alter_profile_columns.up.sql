@@ -1,0 +1,5 @@
+ALTER TABLE "project"
+    ALTER COLUMN "name" DROP NOT NULL,
+    ALTER COLUMN "description" DROP NOT NULL,
+    ALTER COLUMN "start_time" DROP NOT NULL,
+    ALTER COLUMN "end_time" DROP NOT NULL;

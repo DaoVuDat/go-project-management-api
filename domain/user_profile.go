@@ -10,8 +10,8 @@ import (
 // Request and Response model
 
 type UserProfileUpdateRequest struct {
-	FirstName string `json:"firstName,omitempty"`
-	LastName  string `json:"lastName,omitempty"`
+	FirstName *string `json:"firstName,omitempty"`
+	LastName  *string `json:"lastName,omitempty"`
 }
 
 type UserProfileImageUrlRequest struct {
@@ -61,21 +61,35 @@ type UserProfileImageUrlUpdate struct {
 
 func (user *UserProfileUpdate) MapUserProfileUpdateRequestToUserProfileUpdate(id int, data UserProfileUpdateRequest) {
 	user.UserId = id
-	user.FirstName = pgtype.Text{
-		String: data.FirstName,
-		Valid:  len(data.FirstName) > 0,
+	if data.FirstName != nil {
+		user.FirstName = pgtype.Text{
+			String: *data.FirstName,
+			Valid:  true,
+		}
+	} else {
+		user.FirstName = pgtype.Text{
+			Valid: false,
+		}
 	}
-	user.LastName = pgtype.Text{
-		String: data.LastName,
-		Valid:  len(data.LastName) > 0,
+
+	if data.LastName != nil {
+		user.LastName = pgtype.Text{
+			String: *data.LastName,
+			Valid:  true,
+		}
+	} else {
+		user.LastName = pgtype.Text{
+			Valid: false,
+		}
 	}
+
 }
 
 func (user *UserProfileImageUrlUpdate) MapUserProfileImageUrlUpdateRequestToUserProfileImageUrlUpdate(id int, data UserProfileImageUrlRequest) {
 	user.UserId = id
 	user.ImageUrl = pgtype.Text{
 		String: data.ImageURL,
-		Valid:  len(data.ImageURL) > 0,
+		Valid:  true,
 	}
 }
 
@@ -84,11 +98,11 @@ func (user *UserProfileImageUrlUpdate) MapUserProfileImageUrlUpdateRequestToUser
 func (req UserProfileUpdateRequest) Validate() error {
 	return validation.ValidateStruct(&req,
 		validation.Field(&req.FirstName, validation.When(
-			req.FirstName != "",
+			req.FirstName != nil,
 			validation.Length(1, 100).Error("must be at least 1")),
 		),
 		validation.Field(&req.LastName, validation.When(
-			req.LastName != "",
+			req.LastName != nil,
 			validation.Length(1, 100).Error("must be at least 1")),
 		),
 	)

@@ -142,18 +142,18 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 type Project struct {
 	ID          int64       `db:"id"`
 	UserProfile pgtype.Int8 `db:"user_profile"`
-	Name        string      `db:"name"`
+	Name        pgtype.Text `db:"name"`
 	// Which technologies and algorithms used
-	Description string `db:"description"`
+	Description pgtype.Text `db:"description"`
 	// Price of the project
 	Price int32 `db:"price"`
 	// How much money client paid
-	Paid      int32         `db:"paid"`
-	Status    ProjectStatus `db:"status"`
-	StartTime time.Time     `db:"start_time"`
-	EndTime   time.Time     `db:"end_time"`
-	CreatedAt time.Time     `db:"created_at"`
-	UpdatedAt time.Time     `db:"updated_at"`
+	Paid      int32              `db:"paid"`
+	Status    ProjectStatus      `db:"status"`
+	StartTime pgtype.Timestamptz `db:"start_time"`
+	EndTime   pgtype.Timestamptz `db:"end_time"`
+	CreatedAt time.Time          `db:"created_at"`
+	UpdatedAt time.Time          `db:"updated_at"`
 }
 
 type UserAccount struct {

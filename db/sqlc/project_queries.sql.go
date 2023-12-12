@@ -12,6 +12,37 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createProject = `-- name: CreateProject :one
+INSERT INTO project(user_profile, price, paid)
+VALUES ($1, $2, $3)
+RETURNING id, user_profile, name, description, price, paid, status, start_time, end_time, created_at, updated_at
+`
+
+type CreateProjectParams struct {
+	UserProfile pgtype.Int8 `db:"user_profile"`
+	Price       int32       `db:"price"`
+	Paid        int32       `db:"paid"`
+}
+
+func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
+	row := q.db.QueryRow(ctx, createProject, arg.UserProfile, arg.Price, arg.Paid)
+	var i Project
+	err := row.Scan(
+		&i.ID,
+		&i.UserProfile,
+		&i.Name,
+		&i.Description,
+		&i.Price,
+		&i.Paid,
+		&i.Status,
+		&i.StartTime,
+		&i.EndTime,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getProject = `-- name: GetProject :one
 SELECT id, user_profile, name, description, price, paid, status, start_time, end_time, created_at, updated_at
 FROM project
@@ -102,20 +133,29 @@ func (q *Queries) ListProjects(ctx context.Context) ([]Project, error) {
 	return items, nil
 }
 
-const updateProjectPaid = `-- name: UpdateProjectPaid :one
+const updateProjectName = `-- name: UpdateProjectName :one
 UPDATE project
-SET paid = $2
+SET name        = COALESCE($3, name),
+    description = COALESCE($4, description),
+    updated_at  = $2
 WHERE id = $1
 RETURNING id, user_profile, name, description, price, paid, status, start_time, end_time, created_at, updated_at
 `
 
-type UpdateProjectPaidParams struct {
-	ID   int64 `db:"id"`
-	Paid int32 `db:"paid"`
+type UpdateProjectNameParams struct {
+	ID          int64       `db:"id"`
+	UpdatedAt   time.Time   `db:"updated_at"`
+	Name        pgtype.Text `db:"name"`
+	Description pgtype.Text `db:"description"`
 }
 
-func (q *Queries) UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidParams) (Project, error) {
-	row := q.db.QueryRow(ctx, updateProjectPaid, arg.ID, arg.Paid)
+func (q *Queries) UpdateProjectName(ctx context.Context, arg UpdateProjectNameParams) (Project, error) {
+	row := q.db.QueryRow(ctx, updateProjectName,
+		arg.ID,
+		arg.UpdatedAt,
+		arg.Name,
+		arg.Description,
+	)
 	var i Project
 	err := row.Scan(
 		&i.ID,
@@ -133,20 +173,22 @@ func (q *Queries) UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidPa
 	return i, err
 }
 
-const updateProjectStatus = `-- name: UpdateProjectStatus :one
+const updateProjectPaid = `-- name: UpdateProjectPaid :one
 UPDATE project
-SET status = $2
+SET paid   = COALESCE($2, paid),
+    status = COALESCE($3, status)
 WHERE id = $1
 RETURNING id, user_profile, name, description, price, paid, status, start_time, end_time, created_at, updated_at
 `
 
-type UpdateProjectStatusParams struct {
-	ID     int64         `db:"id"`
-	Status ProjectStatus `db:"status"`
+type UpdateProjectPaidParams struct {
+	ID     int64             `db:"id"`
+	Paid   pgtype.Int4       `db:"paid"`
+	Status NullProjectStatus `db:"status"`
 }
 
-func (q *Queries) UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) (Project, error) {
-	row := q.db.QueryRow(ctx, updateProjectStatus, arg.ID, arg.Status)
+func (q *Queries) UpdateProjectPaid(ctx context.Context, arg UpdateProjectPaidParams) (Project, error) {
+	row := q.db.QueryRow(ctx, updateProjectPaid, arg.ID, arg.Paid, arg.Status)
 	var i Project
 	err := row.Scan(
 		&i.ID,
@@ -166,20 +208,27 @@ func (q *Queries) UpdateProjectStatus(ctx context.Context, arg UpdateProjectStat
 
 const updateProjectTimeWorking = `-- name: UpdateProjectTimeWorking :one
 UPDATE project
-SET start_time = $2,
-    end_time   = $3
+SET start_time = COALESCE($3, start_time),
+    end_time   = COALESCE($4, end_time),
+    updated_at = $2
 WHERE id = $1
 RETURNING id, user_profile, name, description, price, paid, status, start_time, end_time, created_at, updated_at
 `
 
 type UpdateProjectTimeWorkingParams struct {
-	ID        int64     `db:"id"`
-	StartTime time.Time `db:"start_time"`
-	EndTime   time.Time `db:"end_time"`
+	ID        int64              `db:"id"`
+	UpdatedAt time.Time          `db:"updated_at"`
+	StartTime pgtype.Timestamptz `db:"start_time"`
+	EndTime   pgtype.Timestamptz `db:"end_time"`
 }
 
 func (q *Queries) UpdateProjectTimeWorking(ctx context.Context, arg UpdateProjectTimeWorkingParams) (Project, error) {
-	row := q.db.QueryRow(ctx, updateProjectTimeWorking, arg.ID, arg.StartTime, arg.EndTime)
+	row := q.db.QueryRow(ctx, updateProjectTimeWorking,
+		arg.ID,
+		arg.UpdatedAt,
+		arg.StartTime,
+		arg.EndTime,
+	)
 	var i Project
 	err := row.Scan(
 		&i.ID,

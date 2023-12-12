@@ -18,9 +18,9 @@ type AccountCreateAndLoginRequest struct {
 }
 
 type AccountUpdateRequest struct {
-	Type     db.AccountType   `json:"accountType,omitempty"`
-	Status   db.AccountStatus `json:"accountStatus,omitempty"`
-	Password string           `json:"password,omitempty"`
+	Type     *db.AccountType   `json:"accountType,omitempty"`
+	Status   *db.AccountStatus `json:"accountStatus,omitempty"`
+	Password *string           `json:"password,omitempty"`
 }
 
 type AccountResponse struct {
@@ -60,18 +60,39 @@ type AccountUpdate struct {
 
 func (a *AccountUpdate) MapAccountUpdateRequestToAccountUpdate(userId int, data AccountUpdateRequest) {
 	a.UserId = userId
-	a.Type = db.NullAccountType{
-		AccountType: data.Type,
-		Valid:       len(data.Type) > 0,
+	if data.Type != nil {
+		a.Type = db.NullAccountType{
+			AccountType: *data.Type,
+			Valid:       true,
+		}
+	} else {
+		a.Type = db.NullAccountType{
+			Valid: false,
+		}
 	}
-	a.Status = db.NullAccountStatus{
-		AccountStatus: data.Status,
-		Valid:         len(data.Status) > 0,
+
+	if data.Status != nil {
+		a.Status = db.NullAccountStatus{
+			AccountStatus: *data.Status,
+			Valid:         true,
+		}
+	} else {
+		a.Status = db.NullAccountStatus{
+			Valid: false,
+		}
 	}
-	a.Password = pgtype.Text{
-		String: data.Password,
-		Valid:  len(data.Password) > 0,
+
+	if data.Password != nil {
+		a.Password = pgtype.Text{
+			String: *data.Password,
+			Valid:  true,
+		}
+	} else {
+		a.Password = pgtype.Text{
+			Valid: false,
+		}
 	}
+
 }
 
 // Setup validators
@@ -92,7 +113,8 @@ func (req AccountCreateAndLoginRequest) Validate() error {
 func (req AccountUpdateRequest) Validate() error {
 	return validation.ValidateStruct(&req,
 		validation.Field(&req.Type, validation.When(
-			req.Type != "",
+			req.Type != nil,
+			validation.Required,
 			validation.In(
 				db.AccountTypeAdmin,
 				db.AccountTypeClient,
@@ -100,7 +122,8 @@ func (req AccountUpdateRequest) Validate() error {
 		)),
 		validation.Field(&req.Status,
 			validation.When(
-				req.Status != "",
+				req.Status != nil,
+				validation.Required,
 				validation.In(
 					db.AccountStatusActivated,
 					db.AccountStatusPending,
@@ -109,7 +132,7 @@ func (req AccountUpdateRequest) Validate() error {
 		),
 		validation.Field(&req.Password,
 			validation.When(
-				req.Password != "",
+				req.Password != nil,
 				validation.Length(6, 100).Error("must be at least 8 characters"),
 			),
 		),

@@ -29,7 +29,7 @@ func (repo *profileUserRepo) CreateUserProfile(ctx context.Context, queries *db.
 		LastName:  userProfileCreate.LastName,
 		ImageUrl: pgtype.Text{
 			String: "",
-			Valid:  true,
+			Valid:  false,
 		},
 	})
 	if err != nil {
