@@ -12,6 +12,7 @@ var (
 	ErrInvalidLogin         = errors.New("username does not exists or password incorrect")
 	ErrInvalidToken         = errors.New("invalid token")
 	ErrExpiredToken         = errors.New("expired token")
+	ErrInvalidAuthorization = errors.New("invalid authorization")
 )
 
 func ErrCustom(errorStr string) error {

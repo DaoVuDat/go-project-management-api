@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "project-management/db/sqlc"
@@ -8,9 +9,9 @@ import (
 )
 
 type ProjectCreateRequest struct {
-	UserId string `json:"userId"`
-	Price  int    `json:"price"`
-	Paid   int    `json:"paid"`
+	UserId int `json:"userId"`
+	Price  int `json:"price"`
+	Paid   int `json:"paid"`
 }
 
 type ProjectUpdateNameRequest struct {
@@ -30,7 +31,7 @@ type ProjectUpdatePaidRequest struct {
 
 type ProjectResponse struct {
 	Id          int64     `json:"id"`
-	UserId      string    `json:"userId"`
+	UserId      int64     `json:"userId"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Price       int       `json:"price"`
@@ -41,16 +42,34 @@ type ProjectResponse struct {
 
 // UC Layer and Repo Layer
 
+type ProjectUseCase interface {
+	CreateANewProject(ctx context.Context, projectCreate ProjectCreate) (ProjectResponse, error)
+	ListAllProjects(ctx context.Context) ([]ProjectResponse, error)
+	ListAllProjectsByUserId(ctx context.Context, userId int) ([]ProjectResponse, error)
+	ListAProject(ctx context.Context, id int) (ProjectResponse, error)
+	ListAProjectByUserId(ctx context.Context, userId int, projectId int) (ProjectResponse, error)
+	UpdateAProjectName(ctx context.Context, updateProjectName ProjectUpdateName) (ProjectResponse, error)
+	UpdateAProjectPaid(ctx context.Context, updateProjectPaid ProjectUpdatePaid) (ProjectResponse, error)
+	UpdateAProjectTimeWorking(ctx context.Context, updateProjectTimeWorking ProjectUpdateTimeWorking) (ProjectResponse, error)
+}
+
+type ProjectRepository interface {
+	CreateAProject(ctx context.Context, projectCreate ProjectCreate) (*db.Project, error)
+	ListAllProjects(ctx context.Context) ([]*db.Project, error)
+	ListAllProjectsByUserId(ctx context.Context, userId int) ([]*db.Project, error)
+	ListAProject(ctx context.Context, id int) (*db.Project, error)
+	ListAProjectByUserId(ctx context.Context, userId int, projectId int) (*db.Project, error)
+	UpdateAProjectName(ctx context.Context, updateProjectName ProjectUpdateName) (*db.Project, error)
+	UpdateAProjectPaid(ctx context.Context, updateProjectPaid ProjectUpdatePaid) (*db.Project, error)
+	UpdateAProjectTimeWorking(ctx context.Context, updateProjectTimeWorking ProjectUpdateTimeWorking) (*db.Project, error)
+}
+
 // Utils
 
 type ProjectCreate struct {
-	UserId      string    `json:"userId"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Price       int       `json:"price"`
-	Paid        int       `json:"paid"`
-	StartTime   time.Time `json:"startTime"`
-	EndTime     time.Time `json:"endTime"`
+	UserId int `json:"userId"`
+	Price  int `json:"price"`
+	Paid   int `json:"paid"`
 }
 
 func (p *ProjectCreate) MapProjectCreateRequestToProjectCreate(data ProjectCreateRequest) {

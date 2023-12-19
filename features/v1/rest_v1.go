@@ -9,6 +9,9 @@ import (
 	httpprofileuser "project-management/features/v1/profile/delivery/http"
 	postgresprofileuser "project-management/features/v1/profile/repository/postgres"
 	usecaseprofileuser "project-management/features/v1/profile/usecase"
+	httpproject "project-management/features/v1/project/delivery/http"
+	postgresproject "project-management/features/v1/project/repository/postgres"
+	usecaseproject "project-management/features/v1/project/usecase"
 
 	"project-management/features/v1/account/usecase"
 )
@@ -21,12 +24,15 @@ func SetupRestVersion1Api(appCtx common.AppContext, groupRoute *echo.Group) {
 	// Repo
 	accountRepo := postgresuseracc.NewPostgresAccountUserRepository(appCtx)
 	userProfileRepo := postgresprofileuser.NewPostgresUserProfileRepo(appCtx)
+	projectRepo := postgresproject.NewPostgresProjectRepo(appCtx)
 
 	// Use case
 	accountUseCase := usecaseuseracc.NewAccountUserUseCase(appCtx, accountRepo, userProfileRepo)
 	userProfileUseCase := usecaseprofileuser.NewUserProfileUseCase(appCtx, userProfileRepo)
+	projectUseCase := usecaseproject.NewProjectUseCase(appCtx, projectRepo)
 
 	// Setup Handlers
 	httpuseracc.SetupAccountUserHandler(rV1Group, appCtx, accountUseCase)
 	httpprofileuser.SetupProfileUserHandler(rV1Group, appCtx, userProfileUseCase)
+	httpproject.SetupProjectHandler(rV1Group, appCtx, projectUseCase)
 }
