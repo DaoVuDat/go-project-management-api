@@ -55,8 +55,8 @@ type ProjectUseCase interface {
 
 type ProjectRepository interface {
 	CreateAProject(ctx context.Context, projectCreate ProjectCreate) (*db.Project, error)
-	ListAllProjects(ctx context.Context) ([]*db.Project, error)
-	ListAllProjectsByUserId(ctx context.Context, userId int) ([]*db.Project, error)
+	ListAllProjects(ctx context.Context) ([]db.Project, error)
+	ListAllProjectsByUserId(ctx context.Context, userId int) ([]db.Project, error)
 	ListAProject(ctx context.Context, id int) (*db.Project, error)
 	ListAProjectByUserId(ctx context.Context, userId int, projectId int) (*db.Project, error)
 	UpdateAProjectName(ctx context.Context, updateProjectName ProjectUpdateName) (*db.Project, error)
@@ -79,12 +79,14 @@ func (p *ProjectCreate) MapProjectCreateRequestToProjectCreate(data ProjectCreat
 }
 
 type ProjectUpdateName struct {
+	Id          int
 	UserId      int
 	Name        pgtype.Text
 	Description pgtype.Text
 }
 
-func (p *ProjectUpdateName) MapProjectUpdateRequestToProjectUpdate(userId int, data ProjectUpdateNameRequest) {
+func (p *ProjectUpdateName) MapProjectUpdateRequestToProjectUpdate(projectId int, userId int, data ProjectUpdateNameRequest) {
+	p.Id = projectId
 	p.UserId = userId
 
 	p.Name = pgtype.Text{}
@@ -102,12 +104,14 @@ func (p *ProjectUpdateName) MapProjectUpdateRequestToProjectUpdate(userId int, d
 }
 
 type ProjectUpdateTimeWorking struct {
+	Id        int
 	UserId    int
 	StartTime pgtype.Timestamptz
 	EndTime   pgtype.Timestamptz
 }
 
-func (p *ProjectUpdateTimeWorking) MapProjectUpdateTimeWorkingRequestToProjectUpdateTimeWorking(userId int, data ProjectUpdateTimeWorkingRequest) error {
+func (p *ProjectUpdateTimeWorking) MapProjectUpdateTimeWorkingRequestToProjectUpdateTimeWorking(projectId int, userId int, data ProjectUpdateTimeWorkingRequest) error {
+	p.Id = projectId
 	p.UserId = userId
 
 	if data.StartTime != nil {
@@ -140,12 +144,14 @@ func (p *ProjectUpdateTimeWorking) MapProjectUpdateTimeWorkingRequestToProjectUp
 }
 
 type ProjectUpdatePaid struct {
+	Id     int
 	UserId int
 	Paid   pgtype.Int4
 	Status db.NullProjectStatus
 }
 
-func (p *ProjectUpdatePaid) MapProjectUpdatePaidRequestToProjectUpdatePaid(userId int, data ProjectUpdatePaidRequest) {
+func (p *ProjectUpdatePaid) MapProjectUpdatePaidRequestToProjectUpdatePaid(projectId int, userId int, data ProjectUpdatePaidRequest) {
+	p.Id = projectId
 	p.UserId = userId
 	p.Paid = pgtype.Int4{}
 	if data.Paid != nil {
