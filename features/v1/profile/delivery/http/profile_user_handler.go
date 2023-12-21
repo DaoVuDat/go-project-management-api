@@ -1,6 +1,7 @@
 package httpprofileuser
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"project-management/auth"
@@ -36,6 +37,9 @@ func (handler *ProfileUserHandler) GetUserProfileHandler(c echo.Context) error {
 	// get user profile
 	userProfileResponse, err := handler.profileUserUC.GetUserProfile(ctx, payload.UserId)
 	if err != nil {
+		if errors.Is(err, domain.ErrNoRowsPG) {
+			return c.JSON(http.StatusOK, []interface{}{})
+		}
 		return err
 	}
 

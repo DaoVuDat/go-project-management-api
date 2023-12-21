@@ -2,6 +2,8 @@ package postgresuseracc
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"project-management/common"
 	db "project-management/db/sqlc"
@@ -33,6 +35,9 @@ func (accountUserRepo *accountUserRepository) GetUserAccount(
 
 	account, err := query.GetUserNameAccount(ctx, username)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNoRowsPG
+		}
 		return nil, err
 	}
 	return &account, nil

@@ -2,6 +2,8 @@ package postgresprofileuser
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"project-management/common"
@@ -44,6 +46,9 @@ func (repo *profileUserRepo) GetUserProfile(ctx context.Context, id int) (*db.Us
 	query := db.New(repo.connPool)
 	userProfile, err := query.GetUserProfileById(ctx, int64(id))
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNoRowsPG
+		}
 		return nil, err
 	}
 	return &userProfile, nil

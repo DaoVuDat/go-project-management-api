@@ -2,6 +2,8 @@ package postgresproject
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"project-management/common"
@@ -43,6 +45,9 @@ func (repo *projectRepo) ListAllProjects(ctx context.Context) ([]db.Project, err
 	queries := db.New(repo.connPool)
 	projects, err := queries.ListProjects(ctx)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNoRowsPG
+		}
 		return nil, err
 	}
 
@@ -57,6 +62,9 @@ func (repo *projectRepo) ListAllProjectsByUserId(ctx context.Context, userId int
 	})
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNoRowsPG
+		}
 		return nil, err
 	}
 
@@ -68,6 +76,9 @@ func (repo *projectRepo) ListAProject(ctx context.Context, id int) (*db.Project,
 	project, err := queries.GetProject(ctx, int64(id))
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNoRowsPG
+		}
 		return nil, err
 	}
 
@@ -84,6 +95,9 @@ func (repo *projectRepo) ListAProjectByUserId(ctx context.Context, userId int, p
 		},
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNoRowsPG
+		}
 		return nil, err
 	}
 

@@ -1,6 +1,7 @@
 package httpproject
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"net/http"
@@ -192,7 +193,9 @@ func (handler *projectHandler) GetAProject(c echo.Context) error {
 		// use Admin service
 		projectResponse, err := handler.projectUC.ListAProject(ctx, projectId)
 		if err != nil {
-			// TODO: handling no rows error
+			if errors.Is(err, domain.ErrNoRowsPG) {
+				return c.JSON(http.StatusOK, []interface{}{})
+			}
 			return err
 		}
 		return c.JSON(http.StatusOK, projectResponse)
@@ -200,7 +203,9 @@ func (handler *projectHandler) GetAProject(c echo.Context) error {
 		// use Client service
 		projectResponse, err := handler.projectUC.ListAProjectByUserId(ctx, payload.UserId, projectId)
 		if err != nil {
-			// TODO: handling no rows error
+			if errors.Is(err, domain.ErrNoRowsPG) {
+				return c.JSON(http.StatusOK, []interface{}{})
+			}
 			return c.JSON(http.StatusNotFound, domain.ErrNotFoundResponse)
 		}
 		return c.JSON(http.StatusOK, projectResponse)

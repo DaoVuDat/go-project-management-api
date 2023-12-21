@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrUsernameExists       = errors.New("username already exists")
+	ErrNoRowsPG             = errors.New("no rows postgres")
 	ErrInvalidUserAccountId = errors.New("invalid user account id")
 	ErrInvalidProjectId     = errors.New("invalid project id")
 	ErrInvalidLogin         = errors.New("username does not exists or password incorrect")

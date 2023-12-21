@@ -27,8 +27,9 @@ func SetupAccountUserHandler(group *echo.Group, appContext common.AppContext, ac
 
 	g := group.Group("/account")
 	g.POST("", handler.CreateUserAccountHandler)
-	g.PATCH("/:id", handler.UpdateUserAccountHandler, auth.AuthorizationRestrictedMiddleware(appContext.GbConfig.TokenPrivateKey))
 	g.POST("/login", handler.LoginUserAccountHandler)
+	g.PATCH("/:id", handler.UpdateUserAccountHandler, auth.AuthorizationRestrictedMiddleware(appContext.GbConfig.TokenPrivateKey))
+	// list user account
 }
 
 /*
