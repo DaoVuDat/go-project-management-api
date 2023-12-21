@@ -31,7 +31,7 @@ Welcome to the Project Management API! This API is built using Go, PostgreSQL, s
 - [x] **Simple API - user_profile model**
   - Develop API endpoints to manage user profiles.
 
-- [ ] **Simple API - project model**
+- [x] **Simple API - project model**
   - Create API routes for handling project-related operations.
 
 - [x] **Authentication via email and password**
