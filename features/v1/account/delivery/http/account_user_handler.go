@@ -6,9 +6,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"net/http"
+	"project-management/auth"
 	"project-management/common"
+	db "project-management/db/sqlc"
 	"project-management/domain"
 	"strconv"
+	"strings"
 )
 
 type accountUserHandler struct {
@@ -23,8 +26,8 @@ func SetupAccountUserHandler(group *echo.Group, appContext common.AppContext, ac
 	}
 
 	g := group.Group("/account")
-	g.POST("/", handler.CreateUserAccountHandler)
-	g.PATCH("/:id", handler.UpdateUserAccountHandler)
+	g.POST("", handler.CreateUserAccountHandler)
+	g.PATCH("/:id", handler.UpdateUserAccountHandler, auth.AuthorizationRestrictedMiddleware(appContext.GbConfig.TokenPrivateKey))
 	g.POST("/login", handler.LoginUserAccountHandler)
 }
 
@@ -51,6 +54,12 @@ func (handler *accountUserHandler) CreateUserAccountHandler(c echo.Context) erro
 }
 
 func (handler *accountUserHandler) UpdateUserAccountHandler(c echo.Context) error {
+	// get payload
+	payload := c.Get(auth.AuthorizedPayloadKey).(*auth.JwtCustomPayload)
+
+	if strings.Compare(payload.Role, string(db.AccountTypeAdmin)) != 0 {
+		return c.JSON(http.StatusUnauthorized, domain.ErrUnauthorizedResponse(domain.ErrInvalidAuthorization))
+	}
 
 	ctx := c.Request().Context()
 

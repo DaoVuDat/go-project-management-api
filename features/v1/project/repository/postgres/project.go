@@ -114,7 +114,7 @@ func (repo *projectRepo) UpdateAProjectPaid(ctx context.Context, updateProjectPa
 	project, err := queries.UpdateProjectPaid(ctx, db.UpdateProjectPaidParams{
 		ID: int64(updateProjectPaid.Id),
 		UserProfile: pgtype.Int8{
-			Int64: int64(updateProjectPaid.Id),
+			Int64: int64(updateProjectPaid.UserId),
 			Valid: true,
 		},
 		UpdatedAt: time.Now(),

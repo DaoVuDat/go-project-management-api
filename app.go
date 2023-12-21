@@ -57,11 +57,13 @@ func main() {
 
 	//============================ Create Mux Router
 	r := echo.New()
+	r.Pre(middleware.RemoveTrailingSlash())
 	//r.Validator = validatorReq
 	r.Logger.SetLevel(log.INFO)
 
 	// Setup Default Error Handling
 	r.HTTPErrorHandler = func(err error, c echo.Context) {
+
 		err = c.JSON(http.StatusInternalServerError, domain.ErrInternalResponse(err))
 		if err != nil {
 			c.Logger().Error(err)

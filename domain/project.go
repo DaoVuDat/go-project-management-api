@@ -5,6 +5,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "project-management/db/sqlc"
+	"project-management/util"
 	"time"
 )
 
@@ -15,18 +16,21 @@ type ProjectCreateRequest struct {
 }
 
 type ProjectUpdateNameRequest struct {
-	Name        *string `json:"startTime,omitempty"`
-	Description *string `json:"endTime,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	UserId      int     `json:"userId"`
+	Description *string `json:"description,omitempty"`
 }
 
 type ProjectUpdateTimeWorkingRequest struct {
+	UserId    int        `json:"userId"`
 	StartTime *time.Time `json:"startTime,omitempty"`
 	EndTime   *time.Time `json:"endTime,omitempty"`
 }
 
 type ProjectUpdatePaidRequest struct {
-	Paid   *int              `json:"startTime,omitempty"`
-	Status *db.ProjectStatus `json:"endTime,omitempty"`
+	UserId int               `json:"userId"`
+	Paid   *int              `json:"paid,omitempty"`
+	Status *db.ProjectStatus `json:"status,omitempty"`
 }
 
 type ProjectResponse struct {
@@ -85,9 +89,9 @@ type ProjectUpdateName struct {
 	Description pgtype.Text
 }
 
-func (p *ProjectUpdateName) MapProjectUpdateRequestToProjectUpdate(projectId int, userId int, data ProjectUpdateNameRequest) {
+func (p *ProjectUpdateName) MapProjectUpdateRequestToProjectUpdate(projectId int, data ProjectUpdateNameRequest) {
 	p.Id = projectId
-	p.UserId = userId
+	p.UserId = data.UserId
 
 	p.Name = pgtype.Text{}
 	if data.Name != nil {
@@ -110,13 +114,14 @@ type ProjectUpdateTimeWorking struct {
 	EndTime   pgtype.Timestamptz
 }
 
-func (p *ProjectUpdateTimeWorking) MapProjectUpdateTimeWorkingRequestToProjectUpdateTimeWorking(projectId int, userId int, data ProjectUpdateTimeWorkingRequest) error {
+func (p *ProjectUpdateTimeWorking) MapProjectUpdateTimeWorkingRequestToProjectUpdateTimeWorking(projectId int, data ProjectUpdateTimeWorkingRequest) error {
 	p.Id = projectId
-	p.UserId = userId
+	p.UserId = data.UserId
 
 	if data.StartTime != nil {
 		var startTime pgtype.Timestamptz
-		err := startTime.Scan(data.StartTime)
+
+		err := startTime.Scan(*data.StartTime)
 		if err != nil {
 			return err
 		}
@@ -129,7 +134,7 @@ func (p *ProjectUpdateTimeWorking) MapProjectUpdateTimeWorkingRequestToProjectUp
 
 	if data.EndTime != nil {
 		var endTime pgtype.Timestamptz
-		err := endTime.Scan(data.EndTime)
+		err := endTime.Scan(*data.EndTime)
 		if err != nil {
 			return err
 		}
@@ -150,9 +155,9 @@ type ProjectUpdatePaid struct {
 	Status db.NullProjectStatus
 }
 
-func (p *ProjectUpdatePaid) MapProjectUpdatePaidRequestToProjectUpdatePaid(projectId int, userId int, data ProjectUpdatePaidRequest) {
+func (p *ProjectUpdatePaid) MapProjectUpdatePaidRequestToProjectUpdatePaid(projectId int, data ProjectUpdatePaidRequest) {
 	p.Id = projectId
-	p.UserId = userId
+	p.UserId = data.UserId
 	p.Paid = pgtype.Int4{}
 	if data.Paid != nil {
 		p.Paid.Int32 = int32(*data.Paid)
@@ -178,6 +183,9 @@ func (req ProjectCreateRequest) Validate() error {
 
 func (req ProjectUpdateNameRequest) Validate() error {
 	return validation.ValidateStruct(&req,
+		validation.Field(&req.UserId,
+			validation.Required,
+		),
 		validation.Field(&req.Name,
 			validation.When(
 				req.Name != nil,
@@ -195,16 +203,22 @@ func (req ProjectUpdateNameRequest) Validate() error {
 
 func (req ProjectUpdateTimeWorkingRequest) Validate() error {
 	return validation.ValidateStruct(&req,
+		validation.Field(&req.UserId,
+			validation.Required,
+		),
 		validation.Field(&req.StartTime,
 			validation.When(
 				req.StartTime != nil,
-				validation.Date(req.StartTime.String()),
+				//validation.Date(time.RFC3339Nano),
+				util.IsUTCTime(time.RFC3339Nano),
 			),
 		),
 		validation.Field(&req.EndTime,
 			validation.When(
 				req.EndTime != nil,
-				validation.Date(req.EndTime.String()),
+				//validation.Date(time.RFC3339Nano),
+
+				util.IsUTCTime(time.RFC3339Nano),
 			),
 		),
 	)
@@ -212,6 +226,9 @@ func (req ProjectUpdateTimeWorkingRequest) Validate() error {
 
 func (req ProjectUpdatePaidRequest) Validate() error {
 	return validation.ValidateStruct(&req,
+		validation.Field(&req.UserId,
+			validation.Required,
+		),
 		validation.Field(&req.Paid,
 			validation.When(
 				req.Paid != nil,

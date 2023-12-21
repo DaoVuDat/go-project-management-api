@@ -7,8 +7,8 @@ import (
 
 var (
 	ErrUsernameExists       = errors.New("username already exists")
-	ErrBadRequest           = errors.New("bad request")
 	ErrInvalidUserAccountId = errors.New("invalid user account id")
+	ErrInvalidProjectId     = errors.New("invalid project id")
 	ErrInvalidLogin         = errors.New("username does not exists or password incorrect")
 	ErrInvalidToken         = errors.New("invalid token")
 	ErrExpiredToken         = errors.New("expired token")
@@ -73,4 +73,4 @@ func ErrUnauthorizedResponse(err error) *ErrResponse {
 	}
 }
 
-var ErrNotFound = &ErrResponse{HttpStatusCode: 404, Message: "Resource not found."}
+var ErrNotFoundResponse = &ErrResponse{HttpStatusCode: 404, Message: "Resource not found."}
